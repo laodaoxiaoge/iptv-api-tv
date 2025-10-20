@@ -70,7 +70,7 @@
         {
             "name": "咪咕-720P",
             "type": 0,
-            "url": "https://gongdian.top/tv/develop202",
+            "url": "https://gh-proxy.com/https://github.com/laodaoxiaoge/migu_video/blob/main/interface.txt",
             "playerType": 1,
             "logo": "https://gongdian.top/tv/taibiao/{name}.png"
         },
