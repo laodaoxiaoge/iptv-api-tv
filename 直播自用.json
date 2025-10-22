@@ -1,18 +1,25 @@
 {
-    "lives": [
+  "lives": [
+    {
+      "name": "冰茶",
+      "type": 0,
+      "playerType": 2,
+      "url": "https://fy.188766.xyz/?ip=&mishitong=true&mima=mianfeidehaimianqian&json=true",
+      "ua": "bingcha/1.1 (mianfeifenxiang) "
+    },
         {
-            "name": "上海移动",
+            "name": "china TV",
             "type": 0,
-            "url": "https://gitee.com/hello186/IPTV_Personal/raw/master/%E4%B8%8A%E6%B5%B7%E7%A7%BB%E5%8A%A8.txt",
+            "url": "https://live.tv.darwinchow.com/sub/02Rh9cCU1AWFMNy6qVCmkwbV7dPhuX",
             "epg": "https://epg.iill.top/epg.xml",
             "ua": "okhttp/3.8.1",
             "timeout": 20,
             "playerType": 1
         },
         {
-            "name": "china TV",
+            "name": "猴子",
             "type": 0,
-            "url": "https://live.tv.darwinchow.com/sub/02Rh9cCU1AWFMNy6qVCmkwbV7dPhuX",
+            "url": "http://4tv.nxns.uno/moonkey/4tv/raw/branch/main/tv.m3u",
             "epg": "https://epg.iill.top/epg.xml",
             "ua": "okhttp/3.8.1",
             "timeout": 20,
@@ -70,7 +77,7 @@
         {
             "name": "咪咕-720P",
             "type": 0,
-            "url": "https://gh-proxy.com/https://github.com/laodaoxiaoge/migu_video/blob/main/interface.txt",
+            "url": "https://gongdian.top/tv/develop202",
             "playerType": 1,
             "logo": "https://gongdian.top/tv/taibiao/{name}.png"
         },
@@ -118,5 +125,26 @@
             "url": "https://gitee.com/hello186/IPTV_Personal/raw/master/%E8%87%AA%E7%94%A8.m3u",
             "playerType": 1
         }
-    ]
+  ],
+  "headers": [
+    {
+      "host": "hlsztemgsplive.miguvideo.com",
+      "header": {
+        "User-Agent": "bingcha/1.1 (mianfeifenxiang) "
+      }
+    }
+  ],
+  "proxy": [
+    "raw.githubusercontent.com"
+  ],
+  "hosts": [
+    "hlsztemgsplive.miguvideo.com=hlsztemgsplive.miguvideo.com.b.cdn.chinamobile.com",
+    "push-rtmp-hs-spe-f5.douyincdn.com=source-fcdn-spe-push.s.bytefcdn.com",
+    "cdn9.163189.xyz=gcore.jsdelivr.net",
+    "cache.ott.fifalive.itv.cmvideo.cn=cache.ott.fifalive.itv.cmvideo.cn.e.cdn.chinamobile.com",
+    "studentlive.migucloud.com=base-v4v6-miguvideo.e.cdn.chinamobile.com"
+  ],
+  "ads": [
+    "static-mozai.4gtv.tv"
+  ]
 }
