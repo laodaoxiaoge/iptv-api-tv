@@ -1,6 +1,256 @@
 #EXTM3U
-# 91KTV直播源 - 最后更新: 2025-10-23 15:29:13 (北京时间)
-# 频道总数: 0
-# 源总数: 0
-# 生成方式: GitHub Actions自动更新
+# 91KTV直播源 - 最后更新: 2025-10-23 15:44:39 (北京时间)
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3001k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3001k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3005k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3005k1080p)
+http://utuxx.91kds.cn/live1/jsb1.m3u8?id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3004k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3004k1080p)
+http://utuxx.91kds.cn/live1/dsdq.m3u8?id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus08&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus30&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus12&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus03&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus15&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus14&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=opfr02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus06&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus22&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus17&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=opus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus10&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus18&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus19&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus20&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=whus25&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn1000k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn1000k1080p)
+htmlplay://https://app.hfbtc.cn/shows/2/6.html@@action=play@@
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=psus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv1hd&ip=psus03&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000484&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000488&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000489&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (cdn酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (cdn酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (电信酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (电信酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=dx&id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv1hd" tvg-name="CCTV-1HD (联通酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-1HD (联通酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=lt&id=cctv1hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn4000k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn4000k1080p)
+http://utuxx.91kds.cn/live1/cctv2.m3u8?id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3001k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3001k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3005k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3005k1080p)
+http://utuxx.91kds.cn/live1/jsb1.m3u8?id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3004k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3004k1080p)
+http://utuxx.91kds.cn/live1/dsdq.m3u8?id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus09&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus27&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus28&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus22&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus04&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=opfr02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus23&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=whus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv2hd&ip=psus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000061&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=dx&id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (联通酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (联通酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=lt&id=cctv2hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (cdn4000k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (cdn4000k1080p)
+http://utuxx.91kds.cn/live1/cctvxw.m3u8?bt=2&id=cctv2hd&pwd=jsdecode@@Referer=https://m-live.cctvnews.cctv.com/@@
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://ksjgj.cn:8888/udp/239.49.8.50:9802
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://171.8.168.64:8800/udp/239.16.10.127:2000
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://171.8.168.31:8800/udp/239.16.10.127:2000
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (联通组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (联通组播1080p)
+http://www.huakangyaoye.cn:8800/udp/225.1.2.78:10462
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://swtyc.f3322.org:8880/udp/239.69.1.102:10250
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://www.xk8.top:8001/udp/239.69.1.102:10250
+#EXTINF:-1 tvg-id="cctv2hd" tvg-name="CCTV-2HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-2HD (电信组播1080p)
+http://nasyc.cn:4022/udp/239.69.1.102:10250
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3001k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3001k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3005k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3005k1080p)
+http://utuxx.91kds.cn/live1/jsb1.m3u8?id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3004k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3004k1080p)
+http://utuxx.91kds.cn/live1/dsdq.m3u8?id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus08&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus28&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus30&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=opfr01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus16&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus06&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=whus07&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=opus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=psus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv3hd&ip=psus03&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (cdn酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (cdn酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000062&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (电信酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (电信酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=dx&id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (联通酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (联通酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=lt&id=cctv3hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (电信组播1080p)
+http://ksjgj.cn:8888/udp/239.49.8.74:8000
+#EXTINF:-1 tvg-id="cctv3hd" tvg-name="CCTV-3HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-3HD (电信组播1080p)
+http://220.167.170.138:4000/udp/239.120.2.32:5141
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3001k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3001k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3005k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3005k1080p)
+http://utuxx.91kds.cn/live1/jsb1.m3u8?id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3004k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3004k1080p)
+http://utuxx.91kds.cn/live1/dsdq.m3u8?id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus08&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus27&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus04&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=opfr02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus06&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus07&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus23&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=whus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=opus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv4hd&ip=psus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000063&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (电信酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (电信酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=dx&id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (联通酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (联通酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=lt&id=cctv4hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (cdn4000k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (cdn4000k1080p)
+http://utuxx.91kds.cn/live1/cctvxw.m3u8?bt=2&id=cctv4hd&pwd=jsdecode@@Referer=https://m-live.cctvnews.cctv.com/@@
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (电信组播1080p)
+http://ksjgj.cn:8888/udp/239.49.8.51:9806
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (电信组播1080p)
+http://171.8.168.31:8800/udp/239.16.10.128:2000
+#EXTINF:-1 tvg-id="cctv4hd" tvg-name="CCTV-4HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-4HD (电信组播1080p)
+http://171.8.168.64:8800/udp/239.16.10.128:2000
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3001k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3001k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3005k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3005k1080p)
+http://utuxx.91kds.cn/live1/jsb1.m3u8?id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3004k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3004k1080p)
+http://utuxx.91kds.cn/live1/dsdq.m3u8?id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus08&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus30&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus13&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus02&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=opfr01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus16&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus06&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus17&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus07&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=opus05&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus19&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus20&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=whus25&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=psus03&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn3002k1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn3002k1080p)
+http://utuxx.91kds.cn/live1/jsb.m3u8?id=cctv5hd&ip=psus01&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (cdn酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (cdn酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (联通1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (联通1080p)
+http://utuxx.91kds.cn/live2/bfgd.m3u8?id=4200000064&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=dx&id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (联通酒店线路)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (联通酒店线路)
+http://utuxx.91kds.cn/live1/jdtv2.m3u8?isp=lt&id=cctv5hd&pwd=jsdecode
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://swtyc.f3322.org:8880/udp/239.69.1.13:9718
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://www.xk8.top:8001/udp/239.69.1.13:9718
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://nasyc.cn:4022/udp/239.69.1.13:9718
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://171.8.168.31:8800/udp/239.16.10.132:2000
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://171.8.168.64:8800/udp/239.16.10.132:2000
+#EXTINF:-1 tvg-id="cctv5hd" tvg-name="CCTV-5HD (电信组播1080p)" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="央视",CCTV-5HD (电信组播1080p)
+http://ksjgj.cn:8888/udp/239.49.8.75:8000
 
+# 频道总数: 5
+# 源总数: 125
+# 生成方式: GitHub Actions自动更新
