@@ -1,36 +1,36 @@
-name: Generate 91ktv M3U
-
-on:
+name: 91ktv直播源每日更新
+on: 
+  workflow_dispatch:
   schedule:
     - cron: '0 3 * * *'  # 每天UTC时间3点运行（北京时间11点）
-  workflow_dispatch:     # 允许手动触发
 
 jobs:
-  generate:
+  generate-and-overwrite:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
+    - name: 检出仓库
       uses: actions/checkout@v4
       
-    - name: Set up Node.js
+    - name: 设置Node.js环境
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        
-    - name: Install dependencies
+
+    - name: 安装依赖
       run: npm install axios crypto-js
-      
-    - name: Generate M3U
+
+    - name: 生成直播源文件
       run: |
-        cat << 'EOF' > generate.js
+        # 创建生成脚本
+        cat > generate.js << 'EOF'
         const axios = require('axios');
         const CryptoJS = require('crypto-js');
         const fs = require('fs');
         
-        async function main() {
-          console.log('开始获取91看电视直播源...');
+        (async () => {
+          console.log('开始生成91看电视直播源...');
           
+          // 所有分类
           const categories = [
             '央视', '卫视', '高清', '4K', '影视', '体育', '动漫', '财经', '综艺', '教育',
             '新闻', '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
@@ -42,55 +42,64 @@ jobs:
           let m3uContent = '#EXTM3U\n';
           let channelCount = 0;
           
+          // 遍历所有分类
           for (const category of categories) {
             console.log(`处理分类: ${category}`);
             
             try {
-              const channelsRes = await axios.get(`http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`, {
-                timeout: 10000,
-                headers: {'User-Agent': 'Mozilla/5.0'}
-              });
+              // 获取频道列表
+              const channelsRes = await axios.get(
+                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
+                { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+              );
               
               if (!channelsRes.data || !Array.isArray(channelsRes.data)) continue;
               
+              // 处理每个频道
               for (const channel of channelsRes.data) {
                 const nwtime = Math.floor(Date.now() / 1000);
                 const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
                 const sign = CryptoJS.MD5(srcKey).toString();
                 
                 try {
-                  const sourceRes = await axios.get(`http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`, {
-                    timeout: 10000,
-                    headers: {'User-Agent': 'Mozilla/5.0'}
-                  });
+                  // 获取播放源
+                  const sourceRes = await axios.get(
+                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                    { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+                  );
                   
-                  if (!sourceRes.data?.liveSource?.[0]) continue;
-                  
-                  m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}\n`;
-                  m3uContent += `${sourceRes.data.liveSource[0].replace('kdsvod://', '')}\n`;
-                  channelCount++;
+                  if (sourceRes.data?.liveSource?.[0]) {
+                    const url = sourceRes.data.liveSource[0].replace('kdsvod://', '');
+                    m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}\n`;
+                    m3uContent += `${url}\n`;
+                    channelCount++;
+                  }
                 } catch (e) {
                   console.log(`跳过频道 ${channel.name}`);
                 }
                 
-                await new Promise(r => setTimeout(r, 300));
+                // 添加延迟避免请求过快
+                await new Promise(r => setTimeout(r, 200));
               }
             } catch (e) {
               console.log(`跳过分类 ${category}`);
             }
           }
           
+          // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
           console.log(`完成! 共获取 ${channelCount} 个频道`);
-        }
-        
-        main().catch(console.error);
+        })().catch(console.error);
         EOF
         
+        # 运行生成脚本
         node generate.js
-        
-    - name: Upload M3U file
-      uses: actions/upload-artifact@v4
-      with:
-        name: 91ktv-playlist
-        path: 91ktv.m3u
+
+    - name: 覆盖更新文件
+      run: |
+        # 强制覆盖之前的文件
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add -f 91ktv.m3u
+        git commit -m "覆盖更新直播源 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git push --force
