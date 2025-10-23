@@ -28,6 +28,68 @@ jobs:
         const CryptoJS = require('crypto-js');
         const fs = require('fs');
         
+        // 获取当前时间（北京时间）
+        function getBeijingTime() {
+          const now = new Date();
+          const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+          return beijingTime.toISOString().replace('T', ' ').replace(/\.\d+Z/, '');
+        }
+        
+        // 清理频道名称，用于归类
+        function cleanChannelName(channelName) {
+          if (!channelName) return '';
+          
+          // 移除源质量标识和括号内容
+          let cleaned = channelName
+            .replace(/\s*\([^)]*\)\s*/g, '')  // 移除括号及内容
+            .replace(/\s*（[^）]*）\s*/g, '')  // 移除中文括号及内容
+            .replace(/\s*cdn\d+k\d+p\s*/gi, '')  // 移除cdn质量标识
+            .replace(/\s*[\[\]【】].*?[\[\]【】]\s*/g, '')  // 移除方括号内容
+            .trim();
+          
+          // 常见频道名称标准化
+          const standardNames = {
+            'CCTV1': 'CCTV-1',
+            'CCTV2': 'CCTV-2',
+            'CCTV5': 'CCTV-5',
+            'CCTV5+': 'CCTV-5+',
+            'CCTV6': 'CCTV-6',
+            'CCTV13': 'CCTV-13',
+            '湖南卫视': '湖南卫视',
+            '江苏卫视': '江苏卫视',
+            '浙江卫视': '浙江卫视',
+            '北京卫视': '北京卫视',
+            '东方卫视': '东方卫视'
+          };
+          
+          // 尝试匹配标准化名称
+          for (const [standard, normalized] of Object.entries(standardNames)) {
+            if (cleaned.includes(standard)) {
+              return normalized;
+            }
+          }
+          
+          return cleaned || channelName;
+        }
+        
+        // 提取源质量信息
+        function extractSourceInfo(sourceName) {
+          if (!sourceName) return '';
+          
+          const matches = sourceName.match(/\((.*?)\)|（(.*?)）|\[(.*?)\]/);
+          if (matches) {
+            for (let i = 1; i < matches.length; i++) {
+              if (matches[i]) return matches[i].trim();
+            }
+          }
+          
+          // 匹配常见的质量模式
+          const qualityMatch = sourceName.match(/(\d+k\d+p|高清|超清|4K|1080p|720p|标清)/i);
+          if (qualityMatch) return qualityMatch[0];
+          
+          return sourceName;
+        }
+        
         // 获取真正的视频流地址
         async function getRealStreamUrl(sourceUrl) {
           try {
@@ -83,6 +145,7 @@ jobs:
         // 主函数
         (async () => {
           console.log('开始生成91看电视直播源...');
+          const updateTime = getBeijingTime();
           
           // 核心分类
           const categories = [
@@ -90,23 +153,31 @@ jobs:
           ];
           
           let m3uContent = '#EXTM3U\n';
+          m3uContent += `# 91KTV直播源 - 最后更新: ${updateTime} (北京时间)\n`;
+          m3uContent += `# 频道总数: \n`;
+          m3uContent += `# 源总数: \n`;
+          m3uContent += `# 生成方式: GitHub Actions自动更新\n\n`;
+          
           let channelCount = 0;
           let sourceCount = 0;
           
-          // 并行处理所有分类
-          await Promise.all(categories.map(async (category) => {
+          // 存储归类后的频道信息
+          const channelMap = new Map();
+          
+          // 处理所有分类
+          for (const category of categories) {
             console.log(`开始处理分类: ${category}`);
             
             try {
-              // 获取频道列表
+              // 获取频道列表 - 注意：这里需要替换为实际的API链接
               const channelsRes = await axios.get(
-                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
+                `YOUR_API_URL_1${encodeURIComponent(category)}`, // 替换为实际链接
                 { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
               if (!channelsRes.data || !Array.isArray(channelsRes.data)) {
                 console.log(`分类 ${category} 无数据`);
-                return;
+                continue;
               }
               
               console.log(`分类 ${category} 有 ${channelsRes.data.length} 个频道`);
@@ -118,9 +189,9 @@ jobs:
                 const sign = CryptoJS.MD5(srcKey).toString();
                 
                 try {
-                  // 获取播放源
+                  // 获取播放源 - 注意：这里需要替换为实际的API链接
                   const sourceRes = await axios.get(
-                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                    `YOUR_API_URL_2${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`, // 替换为实际链接
                     { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
                   );
                   
@@ -129,25 +200,47 @@ jobs:
                     const sources = sourceRes.data.liveSource;
                     const sourceNames = sourceRes.data.liveSourceName || [];
                     
+                    // 清理频道名称用于归类
+                    const cleanName = cleanChannelName(channel.name);
+                    const baseChannelName = cleanName || channel.name;
+                    
+                    // 初始化频道信息
+                    if (!channelMap.has(baseChannelName)) {
+                      channelMap.set(baseChannelName, {
+                        name: baseChannelName,
+                        ename: channel.ename,
+                        icon: channel.icon,
+                        category: category,
+                        sources: []
+                      });
+                    }
+                    
+                    const channelInfo = channelMap.get(baseChannelName);
+                    
                     // 处理每个播放源
                     for (let i = 0; i < sources.length; i++) {
                       let sourceUrl = sources[i];
+                      const sourceName = sourceNames[i] || '';
                       
                       // 获取真正的视频流地址
                       const realStreamUrl = await getRealStreamUrl(sourceUrl);
                       
-                      // 直接添加视频流地址
-                      const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
+                      // 提取源质量信息
+                      const sourceQuality = extractSourceInfo(sourceName);
                       
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
-                      m3uContent += `${realStreamUrl}\n`;
+                      channelInfo.sources.push({
+                        url: realStreamUrl,
+                        quality: sourceQuality,
+                        fullName: sourceName
+                      });
+                      
                       sourceCount++;
                     }
                     
                     channelCount++;
                   }
                 } catch (e) {
-                  console.log(`跳过频道 ${channel.name}`);
+                  console.log(`跳过频道 ${channel.name}: ${e.message}`);
                 }
                 
                 // 短暂延迟
@@ -156,11 +249,55 @@ jobs:
             } catch (e) {
               console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          }));
+          }
+          
+          // 生成最终的m3u内容
+          for (const [channelName, channelInfo] of channelMap.entries()) {
+            // 如果有多个源，按质量排序（高质量在前）
+            if (channelInfo.sources.length > 1) {
+              channelInfo.sources.sort((a, b) => {
+                const qualityOrder = {
+                  '4K': 100, '2160p': 95, '1080p': 90, '高清': 85, 
+                  '720p': 80, '超清': 75, '标清': 70, '480p': 65, '360p': 60
+                };
+                
+                const aScore = qualityOrder[a.quality] || 50;
+                const bScore = qualityOrder[b.quality] || 50;
+                return bScore - aScore;
+              });
+            }
+            
+            // 为每个源生成条目
+            for (let i = 0; i < channelInfo.sources.length; i++) {
+              const source = channelInfo.sources[i];
+              let displayName = channelName;
+              
+              // 如果有多个源，在显示名称中添加质量标识
+              if (channelInfo.sources.length > 1) {
+                const qualityLabel = source.quality ? `[${source.quality}]` : `[源${i+1}]`;
+                displayName = `${channelName} ${qualityLabel}`;
+              }
+              
+              m3uContent += `#EXTINF:-1 tvg-id="${channelInfo.ename}" tvg-name="${channelName}" tvg-logo="${channelInfo.icon}" group-title="${channelInfo.category}",${displayName}\n`;
+              m3uContent += `${source.url}\n`;
+            }
+          }
+          
+          // 更新统计信息
+          m3uContent = m3uContent.replace('# 频道总数: \n', `# 频道总数: ${channelMap.size}\n`);
+          m3uContent = m3uContent.replace('# 源总数: \n', `# 源总数: ${sourceCount}\n`);
           
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流`);
+          console.log(`完成! 共获取 ${channelMap.size} 个归类频道，${sourceCount} 个视频流，更新时间: ${updateTime}`);
+          
+          // 输出归类统计
+          console.log('\\n归类统计:');
+          for (const [name, info] of channelMap.entries()) {
+            if (info.sources.length > 1) {
+              console.log(`  ${name}: ${info.sources.length}个源`);
+            }
+          }
         })().catch(console.error);
         EOF
         
@@ -169,9 +306,12 @@ jobs:
 
     - name: 覆盖更新文件
       run: |
+        # 获取当前北京时间
+        CURRENT_TIME=$(date -d "+8 hours" +'%Y-%m-%d %H:%M')
+        
         # 强制覆盖之前的文件
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add -f 91ktv.m3u
-        git commit -m "覆盖更新直播源 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "🔄 自动更新直播源 - ${CURRENT_TIME} 北京时间 (已归类)" || echo "无变化"
         git push --force
