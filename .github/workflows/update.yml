@@ -22,7 +22,7 @@ jobs:
 
     - name: 生成直播源文件
       run: |
-        # 创建修复版生成脚本
+        # 创建直接视频流生成脚本
         cat > generate.js << 'EOF'
         const axios = require('axios');
         const CryptoJS = require('crypto-js');
@@ -35,141 +35,155 @@ jobs:
           return beijingTime.toISOString().replace('T', ' ').replace(/\.\d+Z/, '');
         }
         
+        // 获取真正的视频流地址
+        async function getRealStreamUrl(sourceUrl) {
+          try {
+            // 处理自定义协议
+            if (sourceUrl.startsWith('kdsvod://')) {
+              sourceUrl = sourceUrl.replace('kdsvod://', '');
+            }
+            
+            // 处理加密URL
+            if (sourceUrl.includes('pwd=jsdecode') && sourceUrl.includes('id=')) {
+              const urlObj = new URL(sourceUrl);
+              const id = urlObj.searchParams.get('id');
+              const bt = urlObj.searchParams.get('bt');
+              
+              const nwtime = Math.floor(Date.now() / 1000);
+              const params = {
+                app: 'com.jiaoxiang.fangnale',
+                version: '2.3.4',
+                mac: 'fu:ck:92:92:ff',
+                utk: '',
+                nwtime: nwtime,
+                ev: '20250113'
+              };
+              
+              const appendStr = 'ahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu';
+              let signStr = id;
+              
+              Object.keys(params).forEach(key => {
+                if (key === 'tmk') return;
+                signStr += (key === 'app') ? params[key] + appendStr : params[key];
+              });
+              
+              params.sign = CryptoJS.MD5(signStr).toString();
+              
+              // 构建真实视频流URL
+              let realUrl = `${urlObj.origin}${urlObj.pathname}?`;
+              if (bt) realUrl += `bt=${bt}&`;
+              realUrl += `id=${id}`;
+              Object.keys(params).forEach(k => {
+                realUrl += `&${k}=${encodeURIComponent(params[k])}`;
+              });
+              
+              return realUrl;
+            }
+            
+            return sourceUrl;
+          } catch (e) {
+            console.error('解析视频流地址失败:', e.message);
+            return sourceUrl;
+          }
+        }
+        
         // 主函数
         (async () => {
           console.log('开始生成91看电视直播源...');
           const updateTime = getBeijingTime();
           
-          // 使用正确的分类列表
+          // 核心分类
           const categories = [
-            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺'
+            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻'
           ];
           
           let m3uContent = '#EXTM3U\n';
+          // 添加文件头注释，包含更新时间
           m3uContent += `# 91KTV直播源 - 最后更新: ${updateTime} (北京时间)\n`;
+          m3uContent += `# 频道总数: \n`;
+          m3uContent += `# 源总数: \n`;
+          m3uContent += `# 生成方式: GitHub Actions自动更新\n\n`;
           
           let channelCount = 0;
           let sourceCount = 0;
           
-          console.log('开始获取频道数据...');
-          
-          try {
-            // 直接测试获取央视分类
-            const testCategory = '央视';
-            console.log(`测试获取分类: ${testCategory}`);
+          // 并行处理所有分类
+          await Promise.all(categories.map(async (category) => {
+            console.log(`开始处理分类: ${category}`);
             
-            // 使用正确的API端点
-            const channelsRes = await axios.get(
-              `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(testCategory)}`,
-              { 
-                timeout: 10000, 
-                headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                  'Referer': 'http://www.91kds.cn/',
-                  'Accept': 'application/json, text/plain, */*'
-                }
-              }
-            );
-            
-            console.log('API响应状态:', channelsRes.status);
-            console.log('响应数据:', JSON.stringify(channelsRes.data).substring(0, 200));
-            
-            if (channelsRes.data && Array.isArray(channelsRes.data)) {
-              console.log(`成功获取到 ${channelsRes.data.length} 个频道`);
+            try {
+              // 获取频道列表 - 注意：这里需要替换为实际的API链接
+              const channelsRes = await axios.get(
+                `YOUR_API_URL_1${encodeURIComponent(category)}`, // 替换为实际链接
+                { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
+              );
               
-              // 处理前几个频道作为测试
-              for (let i = 0; i < Math.min(5, channelsRes.data.length); i++) {
-                const channel = channelsRes.data[i];
-                console.log(`处理频道: ${channel.name}`);
+              if (!channelsRes.data || !Array.isArray(channelsRes.data)) {
+                console.log(`分类 ${category} 无数据`);
+                return;
+              }
+              
+              console.log(`分类 ${category} 有 ${channelsRes.data.length} 个频道`);
+              
+              // 处理每个频道
+              for (const channel of channelsRes.data) {
+                const nwtime = Math.floor(Date.now() / 1000);
+                const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                const sign = CryptoJS.MD5(srcKey).toString();
                 
                 try {
-                  const nwtime = Math.floor(Date.now() / 1000);
-                  const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                  const sign = CryptoJS.MD5(srcKey).toString();
-                  
-                  // 获取播放源
+                  // 获取播放源 - 注意：这里需要替换为实际的API链接
                   const sourceRes = await axios.get(
-                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                    { 
-                      timeout: 10000,
-                      headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Referer': 'http://www.91kds.cn/'
-                      }
-                    }
+                    `YOUR_API_URL_2${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`, // 替换为实际链接
+                    { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
                   );
                   
-                  if (sourceRes.data && sourceRes.data.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                  // 检查是否有播放源
+                  if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
                     const sources = sourceRes.data.liveSource;
                     const sourceNames = sourceRes.data.liveSourceName || [];
                     
-                    console.log(`频道 ${channel.name} 有 ${sources.length} 个播放源`);
-                    
-                    // 添加每个播放源
-                    for (let j = 0; j < sources.length; j++) {
-                      let sourceUrl = sources[j];
+                    // 处理每个播放源
+                    for (let i = 0; i < sources.length; i++) {
+                      let sourceUrl = sources[i];
                       
-                      // 简单的URL处理
-                      if (sourceUrl.startsWith('kdsvod://')) {
-                        sourceUrl = sourceUrl.replace('kdsvod://', '');
-                      }
+                      // 获取真正的视频流地址
+                      const realStreamUrl = await getRealStreamUrl(sourceUrl);
                       
-                      const sourceName = sourceNames[j] ? ` (${sourceNames[j]})` : '';
+                      // 添加更新时间信息到频道名称
+                      const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
                       
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${testCategory}",${channel.name}${sourceName}\n`;
-                      m3uContent += `${sourceUrl}\n`;
+                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
+                      m3uContent += `${realStreamUrl}\n`;
                       sourceCount++;
                     }
                     
                     channelCount++;
-                  } else {
-                    console.log(`频道 ${channel.name} 无播放源数据`);
                   }
-                } catch (sourceError) {
-                  console.log(`获取频道 ${channel.name} 的播放源失败:`, sourceError.message);
+                } catch (e) {
+                  console.log(`跳过频道 ${channel.name}: ${e.message}`);
                 }
                 
                 // 短暂延迟
-                await new Promise(r => setTimeout(r, 100));
+                await new Promise(r => setTimeout(r, 50));
               }
-            } else {
-              console.log('API返回的数据格式不正确');
-              // 添加测试数据以确保文件不为空
-              m3uContent += `#EXTINF:-1 tvg-id="TEST" tvg-name="测试频道" tvg-logo="" group-title="测试",测试频道\n`;
-              m3uContent += `http://example.com/test.m3u8\n`;
-              channelCount = 1;
-              sourceCount = 1;
+            } catch (e) {
+              console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          } catch (error) {
-            console.error('获取频道列表失败:', error.message);
-            // 添加测试数据
-            m3uContent += `#EXTINF:-1 tvg-id="TEST" tvg-name="测试频道" tvg-logo="" group-title="测试",测试频道\n`;
-            m3uContent += `http://example.com/test.m3u8\n`;
-            channelCount = 1;
-            sourceCount = 1;
-          }
+          }));
           
           // 更新统计信息
-          m3uContent += `\n# 频道总数: ${channelCount}\n`;
-          m3uContent += `# 源总数: ${sourceCount}\n`;
-          m3uContent += `# 生成方式: GitHub Actions自动更新\n`;
+          m3uContent = m3uContent.replace('# 频道总数: \n', `# 频道总数: ${channelCount}\n`);
+          m3uContent = m3uContent.replace('# 源总数: \n', `# 源总数: ${sourceCount}\n`);
           
-          // 写入文件
+          // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流`);
-          console.log('文件已保存: 91ktv.m3u');
+          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流，更新时间: ${updateTime}`);
         })().catch(console.error);
         EOF
         
         # 运行生成脚本
         node generate.js
-
-    - name: 检查生成的文件
-      run: |
-        echo "=== 生成的文件内容 ==="
-        head -20 91ktv.m3u
-        echo "=== 文件大小 ==="
-        ls -la 91ktv.m3u
 
     - name: 覆盖更新文件
       run: |
@@ -180,5 +194,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add -f 91ktv.m3u
-        git commit -m "🔄 修复版直播源 - ${CURRENT_TIME} 北京时间" || echo "无变化"
+        git commit -m "🔄 自动更新直播源 - ${CURRENT_TIME} 北京时间" || echo "无变化"
         git push --force
