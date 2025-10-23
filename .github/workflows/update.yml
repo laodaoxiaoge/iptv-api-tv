@@ -41,6 +41,7 @@ jobs:
           
           let m3uContent = '#EXTM3U\n';
           let channelCount = 0;
+          let sourceCount = 0;
           
           // 遍历所有分类
           for (const category of categories) {
@@ -68,10 +69,21 @@ jobs:
                     { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
                   );
                   
-                  if (sourceRes.data?.liveSource?.[0]) {
-                    const url = sourceRes.data.liveSource[0].replace('kdsvod://', '');
-                    m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}\n`;
-                    m3uContent += `${url}\n`;
+                  // 检查是否有播放源
+                  if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                    const sources = sourceRes.data.liveSource;
+                    const sourceNames = sourceRes.data.liveSourceName || [];
+                    
+                    // 添加所有播放源
+                    for (let i = 0; i < sources.length; i++) {
+                      const url = sources[i].replace('kdsvod://', '');
+                      const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
+                      
+                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
+                      m3uContent += `${url}\n`;
+                      sourceCount++;
+                    }
+                    
                     channelCount++;
                   }
                 } catch (e) {
@@ -88,7 +100,7 @@ jobs:
           
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道`);
+          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个播放源`);
         })().catch(console.error);
         EOF
         
