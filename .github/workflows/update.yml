@@ -93,6 +93,19 @@ jobs:
           let channelCount = 0;
           let sourceCount = 0;
           
+          // 添加文件生成时间信息
+          const currentTime = new Date().toLocaleString('zh-CN', { 
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          
+          m3uContent += `# 91ktv直播源生成时间: ${currentTime}\n`;
+          
           // 并行处理所有分类
           await Promise.all(categories.map(async (category) => {
             console.log(`开始处理分类: ${category}`);
@@ -100,7 +113,7 @@ jobs:
             try {
               // 获取频道列表
               const channelsRes = await axios.get(
-                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
+                `链接1${encodeURIComponent(category)}`,
                 { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
@@ -120,7 +133,7 @@ jobs:
                 try {
                   // 获取播放源
                   const sourceRes = await axios.get(
-                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                    `链接2${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
                     { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
                   );
                   
@@ -158,9 +171,18 @@ jobs:
             }
           }));
           
+          // 如果没有获取到任何源，添加一个有效的测试视频流
+          if (sourceCount === 0) {
+            console.log('未获取到直播源，添加测试视频流');
+            m3uContent += `#EXTINF:-1 tvg-id="TEST" tvg-name="测试频道" tvg-logo="https://example.com/icon.png" group-title="测试",测试频道\n`;
+            m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
+            sourceCount = 1;
+            channelCount = 1;
+          }
+          
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流`);
+          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流，生成时间: ${currentTime}`);
         })().catch(console.error);
         EOF
         
