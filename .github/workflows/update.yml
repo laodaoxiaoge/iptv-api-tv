@@ -28,13 +28,6 @@ jobs:
         const CryptoJS = require('crypto-js');
         const fs = require('fs');
         
-        // 获取当前时间（北京时间）
-        function getBeijingTime() {
-          const now = new Date();
-          const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-          return beijingTime.toISOString().replace('T', ' ').replace(/\.\d+Z/, '');
-        }
-        
         // 获取真正的视频流地址
         async function getRealStreamUrl(sourceUrl) {
           try {
@@ -90,7 +83,6 @@ jobs:
         // 主函数
         (async () => {
           console.log('开始生成91看电视直播源...');
-          const updateTime = getBeijingTime();
           
           // 核心分类
           const categories = [
@@ -98,12 +90,6 @@ jobs:
           ];
           
           let m3uContent = '#EXTM3U\n';
-          // 添加文件头注释，包含更新时间
-          m3uContent += `# 91KTV直播源 - 最后更新: ${updateTime} (北京时间)\n`;
-          m3uContent += `# 频道总数: \n`;
-          m3uContent += `# 源总数: \n`;
-          m3uContent += `# 生成方式: GitHub Actions自动更新\n\n`;
-          
           let channelCount = 0;
           let sourceCount = 0;
           
@@ -112,9 +98,9 @@ jobs:
             console.log(`开始处理分类: ${category}`);
             
             try {
-              // 获取频道列表 - 注意：这里需要替换为实际的API链接
+              // 获取频道列表
               const channelsRes = await axios.get(
-                `YOUR_API_URL_1${encodeURIComponent(category)}`, // 替换为实际链接
+                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
                 { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
@@ -132,9 +118,9 @@ jobs:
                 const sign = CryptoJS.MD5(srcKey).toString();
                 
                 try {
-                  // 获取播放源 - 注意：这里需要替换为实际的API链接
+                  // 获取播放源
                   const sourceRes = await axios.get(
-                    `YOUR_API_URL_2${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`, // 替换为实际链接
+                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
                     { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
                   );
                   
@@ -150,7 +136,7 @@ jobs:
                       // 获取真正的视频流地址
                       const realStreamUrl = await getRealStreamUrl(sourceUrl);
                       
-                      // 添加更新时间信息到频道名称
+                      // 直接添加视频流地址
                       const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
                       
                       m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
@@ -161,7 +147,7 @@ jobs:
                     channelCount++;
                   }
                 } catch (e) {
-                  console.log(`跳过频道 ${channel.name}: ${e.message}`);
+                  console.log(`跳过频道 ${channel.name}`);
                 }
                 
                 // 短暂延迟
@@ -172,13 +158,9 @@ jobs:
             }
           }));
           
-          // 更新统计信息
-          m3uContent = m3uContent.replace('# 频道总数: \n', `# 频道总数: ${channelCount}\n`);
-          m3uContent = m3uContent.replace('# 源总数: \n', `# 源总数: ${sourceCount}\n`);
-          
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流，更新时间: ${updateTime}`);
+          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流`);
         })().catch(console.error);
         EOF
         
@@ -187,12 +169,9 @@ jobs:
 
     - name: 覆盖更新文件
       run: |
-        # 获取当前北京时间
-        CURRENT_TIME=$(date -d "+8 hours" +'%Y-%m-%d %H:%M')
-        
         # 强制覆盖之前的文件
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add -f 91ktv.m3u
-        git commit -m "🔄 自动更新直播源 - ${CURRENT_TIME} 北京时间" || echo "无变化"
+        git commit -m "覆盖更新直播源 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push --force
