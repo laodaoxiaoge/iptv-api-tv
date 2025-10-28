@@ -22,7 +22,7 @@ jobs:
 
     - name: 生成直播源文件
       run: |
-        # 完整版生成脚本
+        # 修正版生成脚本 - 只合并频道名称
         cat > generate.js << 'EOF'
         const axios = require('axios');
         const CryptoJS = require('crypto-js');
@@ -40,6 +40,70 @@ jobs:
             minute: '2-digit',
             second: '2-digit'
           });
+        }
+        
+        // 合并频道名称 - 只去掉括号后缀
+        function mergeChannelName(channelName) {
+          if (!channelName) return channelName;
+          
+          // 只处理频道名称中的括号后缀，保留视频流线路标识
+          const patterns = [
+            /\s*\([^)]*cdn[^)]*\)$/i,    // cdn相关
+            /\s*\([^)]*\d+k\d+p[^)]*\)$/i, // 分辨率标识
+            /\s*\([^)]*线路[^)]*\)$/i,    // 线路标识
+            /\s*\([^)]*源[^)]*\)$/i,      // 源标识
+            /\s*\([^)]*备用[^)]*\)$/i,    // 备用标识
+            /\s*\([^)]*高清[^)]*\)$/i,    // 高清标识
+            /\s*\([^)]*流畅[^)]*\)$/i,    // 流畅标识
+            /\s*\([^)]*标清[^)]*\)$/i,    // 标清标识
+            /\s*\([^)]*超清[^)]*\)$/i,    // 超清标识
+            /\s*\([^)]*极速[^)]*\)$/i,    // 极速标识
+          ];
+          
+          let cleanedName = channelName;
+          
+          // 应用所有模式，只去掉频道名称中的后缀
+          for (const pattern of patterns) {
+            cleanedName = cleanedName.replace(pattern, '');
+          }
+          
+          // 特殊处理常见频道名称标准化
+          const channelMappings = {
+            'CCTV-1综合': 'CCTV-1',
+            'CCTV-1高清': 'CCTV-1HD',
+            'CCTV-1 4K': 'CCTV-1 4K',
+            'CCTV-2财经': 'CCTV-2',
+            'CCTV-3综艺': 'CCTV-3',
+            'CCTV-4中文国际': 'CCTV-4',
+            'CCTV-5体育': 'CCTV-5',
+            'CCTV-5+体育赛事': 'CCTV-5+',
+            'CCTV-6电影': 'CCTV-6',
+            'CCTV-7国防军事': 'CCTV-7',
+            'CCTV-8电视剧': 'CCTV-8',
+            'CCTV-9纪录': 'CCTV-9',
+            'CCTV-10科教': 'CCTV-10',
+            'CCTV-11戏曲': 'CCTV-11',
+            'CCTV-12社会与法': 'CCTV-12',
+            'CCTV-13新闻': 'CCTV-13',
+            'CCTV-14少儿': 'CCTV-14',
+            'CCTV-15音乐': 'CCTV-15',
+            'CCTV-16奥林匹克': 'CCTV-16',
+            'CCTV-17农业农村': 'CCTV-17',
+            '湖南卫视': '湖南卫视',
+            '浙江卫视': '浙江卫视',
+            '江苏卫视': '江苏卫视',
+            '北京卫视': '北京卫视',
+            '东方卫视': '东方卫视',
+          };
+          
+          // 如果匹配到标准名称，使用标准名称
+          for (const [original, standard] of Object.entries(channelMappings)) {
+            if (cleanedName.includes(original)) {
+              return standard;
+            }
+          }
+          
+          return cleanedName.trim() || channelName;
         }
         
         // 获取真正的视频流地址
@@ -108,6 +172,10 @@ jobs:
           
           let channelCount = 0;
           let sourceCount = 0;
+          let mergedCount = 0;
+          
+          // 存储已处理的频道，用于去重统计
+          const processedChannels = new Set();
           
           // 核心分类
           const categories = [
@@ -157,10 +225,24 @@ jobs:
                       // 获取真正的视频流地址
                       const realStreamUrl = await getRealStreamUrl(sourceUrl);
                       
-                      // 直接添加视频流地址
-                      const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
+                      // 合并频道名称 - 只处理频道名称，不处理视频流名称
+                      const originalChannelName = channel.name;
+                      const mergedChannelName = mergeChannelName(originalChannelName);
+                      const sourceName = sourceNames[i] || '';
                       
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
+                      // 记录名称合并情况
+                      if (originalChannelName !== mergedChannelName) {
+                        console.log(`频道名称合并: "${originalChannelName}" -> "${mergedChannelName}"`);
+                        mergedCount++;
+                      }
+                      
+                      // 记录已处理的频道
+                      processedChannels.add(mergedChannelName);
+                      
+                      // 显示名称：合并后的频道名称 + 视频流名称（如果有）
+                      const displayName = sourceName ? `${mergedChannelName} (${sourceName})` : mergedChannelName;
+                      
+                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${mergedChannelName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
                       m3uContent += `${realStreamUrl}\n`;
                       sourceCount++;
                     }
@@ -181,11 +263,15 @@ jobs:
           
           // 添加统计信息
           m3uContent += `\n# 统计信息: 共获取 ${channelCount} 个频道, ${sourceCount} 个视频流\n`;
+          m3uContent += `# 频道名称合并: ${mergedCount} 个频道名称被标准化\n`;
+          m3uContent += `# 唯一频道数: ${processedChannels.size} 个\n`;
           m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
           
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道, ${sourceCount} 个视频流, 更新时间: ${currentTime}`);
+          console.log(`完成! 共获取 ${channelCount} 个频道, ${sourceCount} 个视频流`);
+          console.log(`频道名称合并: ${mergedCount} 个频道名称被标准化`);
+          console.log(`唯一频道数: ${processedChannels.size} 个`);
         })().catch(error => {
           console.error('程序执行错误:', error);
           // 确保即使出错也生成文件
@@ -211,13 +297,13 @@ jobs:
         echo "=== 文件前20行 ==="
         head -20 91ktv.m3u
         echo ""
-        echo "=== 文件后10行 ==="
-        tail -10 91ktv.m3u
+        echo "=== 频道名称示例 ==="
+        grep -E '^#EXTINF' 91ktv.m3u | head -15 | sed 's/.*tvg-name="\([^"]*\)".*/\1/' | sort | uniq
 
     - name: 覆盖更新文件
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "完整更新直播源 $(date +'%Y-%m-%d %H:%M:%S')" || echo "无变化"
+        git commit -m "更新直播源 $(date +'%Y-%m-%d %H:%M:%S') - 频道名称合并" || echo "无变化"
         git push
