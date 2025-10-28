@@ -22,7 +22,6 @@ jobs:
 
     - name: 生成直播源文件
       run: |
-        # 修正版生成脚本 - 只合并频道名称
         cat > generate.js << 'EOF'
         const axios = require('axios');
         const CryptoJS = require('crypto-js');
@@ -42,120 +41,18 @@ jobs:
           });
         }
         
-        // 合并频道名称 - 只去掉括号后缀
-        function mergeChannelName(channelName) {
+        // 精确清理频道名称 - 只删除括号内容
+        function cleanChannelName(channelName) {
           if (!channelName) return channelName;
           
-          // 只处理频道名称中的括号后缀，保留视频流线路标识
-          const patterns = [
-            /\s*\([^)]*cdn[^)]*\)$/i,    // cdn相关
-            /\s*\([^)]*\d+k\d+p[^)]*\)$/i, // 分辨率标识
-            /\s*\([^)]*线路[^)]*\)$/i,    // 线路标识
-            /\s*\([^)]*源[^)]*\)$/i,      // 源标识
-            /\s*\([^)]*备用[^)]*\)$/i,    // 备用标识
-            /\s*\([^)]*高清[^)]*\)$/i,    // 高清标识
-            /\s*\([^)]*流畅[^)]*\)$/i,    // 流畅标识
-            /\s*\([^)]*标清[^)]*\)$/i,    // 标清标识
-            /\s*\([^)]*超清[^)]*\)$/i,    // 超清标识
-            /\s*\([^)]*极速[^)]*\)$/i,    // 极速标识
-          ];
+          // 只删除括号及其内容，保留其他所有字符
+          const cleanedName = channelName
+            .replace(/\s*\([^)]*\)/g, '')  // 删除英文括号及内容
+            .replace(/\s*（[^）]*）/g, '')  // 删除中文括号及内容
+            .replace(/\s*\[[^\]]*\]/g, '')  // 删除方括号及内容
+            .trim();
           
-          let cleanedName = channelName;
-          
-          // 应用所有模式，只去掉频道名称中的后缀
-          for (const pattern of patterns) {
-            cleanedName = cleanedName.replace(pattern, '');
-          }
-          
-          // 特殊处理常见频道名称标准化
-          const channelMappings = {
-            'CCTV-1综合': 'CCTV-1',
-            'CCTV-1高清': 'CCTV-1HD',
-            'CCTV-1 4K': 'CCTV-1 4K',
-            'CCTV-2财经': 'CCTV-2',
-            'CCTV-3综艺': 'CCTV-3',
-            'CCTV-4中文国际': 'CCTV-4',
-            'CCTV-5体育': 'CCTV-5',
-            'CCTV-5+体育赛事': 'CCTV-5+',
-            'CCTV-6电影': 'CCTV-6',
-            'CCTV-7国防军事': 'CCTV-7',
-            'CCTV-8电视剧': 'CCTV-8',
-            'CCTV-9纪录': 'CCTV-9',
-            'CCTV-10科教': 'CCTV-10',
-            'CCTV-11戏曲': 'CCTV-11',
-            'CCTV-12社会与法': 'CCTV-12',
-            'CCTV-13新闻': 'CCTV-13',
-            'CCTV-14少儿': 'CCTV-14',
-            'CCTV-15音乐': 'CCTV-15',
-            'CCTV-16奥林匹克': 'CCTV-16',
-            'CCTV-17农业农村': 'CCTV-17',
-            '湖南卫视': '湖南卫视',
-            '浙江卫视': '浙江卫视',
-            '江苏卫视': '江苏卫视',
-            '北京卫视': '北京卫视',
-            '东方卫视': '东方卫视',
-          };
-          
-          // 如果匹配到标准名称，使用标准名称
-          for (const [original, standard] of Object.entries(channelMappings)) {
-            if (cleanedName.includes(original)) {
-              return standard;
-            }
-          }
-          
-          return cleanedName.trim() || channelName;
-        }
-        
-        // 获取真正的视频流地址
-        async function getRealStreamUrl(sourceUrl) {
-          try {
-            // 处理自定义协议
-            if (sourceUrl.startsWith('kdsvod://')) {
-              sourceUrl = sourceUrl.replace('kdsvod://', '');
-            }
-            
-            // 处理加密URL
-            if (sourceUrl.includes('pwd=jsdecode') && sourceUrl.includes('id=')) {
-              const urlObj = new URL(sourceUrl);
-              const id = urlObj.searchParams.get('id');
-              const bt = urlObj.searchParams.get('bt');
-              
-              const nwtime = Math.floor(Date.now() / 1000);
-              const params = {
-                app: 'com.jiaoxiang.fangnale',
-                version: '2.3.4',
-                mac: 'fu:ck:92:92:ff',
-                utk: '',
-                nwtime: nwtime,
-                ev: '20250113'
-              };
-              
-              const appendStr = 'ahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu';
-              let signStr = id;
-              
-              Object.keys(params).forEach(key => {
-                if (key === 'tmk') return;
-                signStr += (key === 'app') ? params[key] + appendStr : params[key];
-              });
-              
-              params.sign = CryptoJS.MD5(signStr).toString();
-              
-              // 构建真实视频流URL
-              let realUrl = `${urlObj.origin}${urlObj.pathname}?`;
-              if (bt) realUrl += `bt=${bt}&`;
-              realUrl += `id=${id}`;
-              Object.keys(params).forEach(k => {
-                realUrl += `&${k}=${encodeURIComponent(params[k])}`;
-              });
-              
-              return realUrl;
-            }
-            
-            return sourceUrl;
-          } catch (e) {
-            console.error('解析视频流地址失败:', e.message);
-            return sourceUrl;
-          }
+          return cleanedName || channelName;
         }
         
         // 主函数
@@ -166,144 +63,136 @@ jobs:
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
           
-          // 在文件顶端添加更新时间信息
-          m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
-          m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
+          let totalChannels = 0;
+          let totalStreams = 0;
+          let cleanedCount = 0;
           
-          let channelCount = 0;
-          let sourceCount = 0;
-          let mergedCount = 0;
-          
-          // 存储已处理的频道，用于去重统计
-          const processedChannels = new Set();
-          
-          // 核心分类
+          // 所有分类 - 完全保留
           const categories = [
-            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻'
+            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺', '教育',
+            '新闻', '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
+            '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
+            '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
+            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
           ];
           
-          // 并行处理所有分类
-          await Promise.all(categories.map(async (category) => {
-            console.log(`开始处理分类: ${category}`);
+          // 存储原始频道信息用于验证
+          const originalChannels = new Set();
+          const cleanedChannels = new Set();
+          
+          // 处理所有分类
+          for (const category of categories) {
+            console.log(`处理分类: ${category}`);
             
             try {
               // 获取频道列表
-              const channelsRes = await axios.get(
+              const response = await axios.get(
                 `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
                 { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
-              if (!channelsRes.data || !Array.isArray(channelsRes.data)) {
-                console.log(`分类 ${category} 无数据`);
-                return;
-              }
-              
-              console.log(`分类 ${category} 有 ${channelsRes.data.length} 个频道`);
-              
-              // 处理每个频道
-              for (const channel of channelsRes.data) {
-                const nwtime = Math.floor(Date.now() / 1000);
-                const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                const sign = CryptoJS.MD5(srcKey).toString();
+              if (response.data && Array.isArray(response.data)) {
+                console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
                 
-                try {
-                  // 获取播放源
-                  const sourceRes = await axios.get(
-                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                    { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
-                  );
+                // 处理每个频道
+                for (const channel of response.data) {
+                  const nwtime = Math.floor(Date.now() / 1000);
+                  const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                  const sign = CryptoJS.MD5(srcKey).toString();
                   
-                  // 检查是否有播放源
-                  if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
-                    const sources = sourceRes.data.liveSource;
-                    const sourceNames = sourceRes.data.liveSourceName || [];
+                  try {
+                    // 获取播放源
+                    const sourceRes = await axios.get(
+                      `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                      { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+                    );
                     
-                    // 处理每个播放源
-                    for (let i = 0; i < sources.length; i++) {
-                      let sourceUrl = sources[i];
+                    if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                      const sources = sourceRes.data.liveSource;
+                      const sourceNames = sourceRes.data.liveSourceName || [];
                       
-                      // 获取真正的视频流地址
-                      const realStreamUrl = await getRealStreamUrl(sourceUrl);
+                      // 记录原始频道
+                      originalChannels.add(channel.name);
                       
-                      // 合并频道名称 - 只处理频道名称，不处理视频流名称
-                      const originalChannelName = channel.name;
-                      const mergedChannelName = mergeChannelName(originalChannelName);
-                      const sourceName = sourceNames[i] || '';
+                      // 清理频道名称 - 只删除括号内容
+                      const cleanedName = cleanChannelName(channel.name);
+                      cleanedChannels.add(cleanedName);
                       
-                      // 记录名称合并情况
-                      if (originalChannelName !== mergedChannelName) {
-                        console.log(`频道名称合并: "${originalChannelName}" -> "${mergedChannelName}"`);
-                        mergedCount++;
+                      if (channel.name !== cleanedName) {
+                        console.log(`频道名称清理: "${channel.name}" -> "${cleanedName}"`);
+                        cleanedCount++;
                       }
                       
-                      // 记录已处理的频道
-                      processedChannels.add(mergedChannelName);
+                      // 处理每个播放源
+                      for (let i = 0; i < sources.length; i++) {
+                        let sourceUrl = sources[i];
+                        
+                        // 处理URL协议
+                        if (sourceUrl.startsWith('kdsvod://')) {
+                          sourceUrl = sourceUrl.replace('kdsvod://', '');
+                        }
+                        
+                        // 修正：显示名称只使用清理后的频道名称，不添加视频流名称
+                        const displayName = cleanedName;  // 只显示频道名称，不显示线路信息
+                        
+                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
+                        m3uContent += `${sourceUrl}\n`;
+                        totalStreams++;
+                      }
                       
-                      // 显示名称：合并后的频道名称 + 视频流名称（如果有）
-                      const displayName = sourceName ? `${mergedChannelName} (${sourceName})` : mergedChannelName;
-                      
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${mergedChannelName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
-                      m3uContent += `${realStreamUrl}\n`;
-                      sourceCount++;
+                      totalChannels++;
                     }
-                    
-                    channelCount++;
+                  } catch (e) {
+                    console.log(`跳过频道 ${channel.name}`);
                   }
-                } catch (e) {
-                  console.log(`跳过频道 ${channel.name}`);
+                  
+                  await new Promise(r => setTimeout(r, 50));
                 }
-                
-                // 短暂延迟
-                await new Promise(r => setTimeout(r, 50));
               }
             } catch (e) {
               console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          }));
+          }
           
           // 添加统计信息
-          m3uContent += `\n# 统计信息: 共获取 ${channelCount} 个频道, ${sourceCount} 个视频流\n`;
-          m3uContent += `# 频道名称合并: ${mergedCount} 个频道名称被标准化\n`;
-          m3uContent += `# 唯一频道数: ${processedChannels.size} 个\n`;
+          m3uContent += `\n# 统计信息:\n`;
+          m3uContent += `# 原始频道数: ${originalChannels.size}\n`;
+          m3uContent += `# 清理后频道数: ${cleanedChannels.size}\n`;
+          m3uContent += `# 视频流总数: ${totalStreams}\n`;
+          m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
           m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
           
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道, ${sourceCount} 个视频流`);
-          console.log(`频道名称合并: ${mergedCount} 个频道名称被标准化`);
-          console.log(`唯一频道数: ${processedChannels.size} 个`);
-        })().catch(error => {
-          console.error('程序执行错误:', error);
-          // 确保即使出错也生成文件
-          const currentTime = getBeijingTime();
-          let content = '#EXTM3U\n';
-          content += `# 91ktv直播源更新时间: ${currentTime}\n`;
-          content += `#EXTINF:-1 tvg-id="ERROR" tvg-name="程序错误" group-title="错误",程序执行错误\n`;
-          content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
-          content += `\n# 生成完成时间: ${currentTime}\n`;
-          fs.writeFileSync('91ktv.m3u', content);
-        });
+          console.log(`完成! 频道: ${totalChannels}, 流: ${totalStreams}`);
+          console.log(`原始频道: ${originalChannels.size}, 清理后: ${cleanedChannels.size}`);
+        })().catch(console.error);
         EOF
         
         # 运行生成脚本
         node generate.js
 
-    - name: 查看生成结果
+    - name: 验证结果
       run: |
-        echo "=== 生成的文件信息 ==="
+        echo "=== 验证生成结果 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
-        echo "行数: $(wc -l < 91ktv.m3u)"
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
+        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
-        echo "=== 文件前20行 ==="
-        head -20 91ktv.m3u
+        echo "=== 显示名称验证 ==="
+        echo "显示名称示例（应该只有频道名称，没有线路信息）:"
+        grep '^#EXTINF' 91ktv.m3u | head -10 | sed 's/.*,//' | while read name; do
+          echo "  - $name"
+        done
         echo ""
-        echo "=== 频道名称示例 ==="
-        grep -E '^#EXTINF' 91ktv.m3u | head -15 | sed 's/.*tvg-name="\([^"]*\)".*/\1/' | sort | uniq
+        echo "=== 统计信息 ==="
+        tail -10 91ktv.m3u
 
     - name: 覆盖更新文件
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新直播源 $(date +'%Y-%m-%d %H:%M:%S') - 频道名称合并" || echo "无变化"
+        git commit -m "更新直播源 - 纯频道名称显示 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
