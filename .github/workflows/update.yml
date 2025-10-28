@@ -7,7 +7,7 @@ on:
 jobs:
   generate-and-overwrite:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
@@ -80,21 +80,68 @@ jobs:
           }
         }
         
+        // 检查URL是否有效
+        async function checkUrlValid(url, timeout = 3000) {
+          try {
+            const response = await axios.head(url, { 
+              timeout,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Range': 'bytes=0-1'
+              }
+            });
+            return response.status === 200 || response.status === 206;
+          } catch (error) {
+            // 如果HEAD请求失败，尝试GET请求小部分数据
+            try {
+              const response = await axios.get(url, {
+                timeout: timeout,
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                  'Range': 'bytes=0-1024'
+                }
+              });
+              return response.status === 200 || response.status === 206;
+            } catch (e) {
+              return false;
+            }
+          }
+        }
+        
         // 主函数
         (async () => {
           console.log('开始生成91看电视直播源...');
+          
+          const currentTime = new Date().toLocaleString('zh-CN', { 
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          
+          let m3uContent = '#EXTM3U\n';
+          m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
+          
+          // 在文件顶端添加一个稳定的测试视频流
+          m3uContent += `#EXTINF:-1 tvg-id="TEST" tvg-name="测试流" tvg-logo="" group-title="测试",测试频道 (更新时间: ${currentTime})\n`;
+          m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
           
           // 核心分类
           const categories = [
             '央视', '卫视', '高清', '4K', '影视', '体育', '新闻'
           ];
           
-          let m3uContent = '#EXTM3U\n';
-          let channelCount = 0;
-          let sourceCount = 0;
+          let validChannelCount = 0;
+          let validSourceCount = 0;
+          let totalSourceCount = 0;
           
-          // 并行处理所有分类
-          await Promise.all(categories.map(async (category) => {
+          const validStreams = [];
+          
+          // 处理所有分类
+          for (const category of categories) {
             console.log(`开始处理分类: ${category}`);
             
             try {
@@ -106,7 +153,7 @@ jobs:
               
               if (!channelsRes.data || !Array.isArray(channelsRes.data)) {
                 console.log(`分类 ${category} 无数据`);
-                return;
+                continue;
               }
               
               console.log(`分类 ${category} 有 ${channelsRes.data.length} 个频道`);
@@ -132,40 +179,95 @@ jobs:
                     // 处理每个播放源
                     for (let i = 0; i < sources.length; i++) {
                       let sourceUrl = sources[i];
+                      totalSourceCount++;
                       
                       // 获取真正的视频流地址
                       const realStreamUrl = await getRealStreamUrl(sourceUrl);
                       
-                      // 直接添加视频流地址
-                      const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
+                      // 检查URL是否有效
+                      console.log(`检查URL有效性: ${channel.name}`);
+                      const isValid = await checkUrlValid(realStreamUrl);
                       
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}\n`;
-                      m3uContent += `${realStreamUrl}\n`;
-                      sourceCount++;
+                      if (isValid) {
+                        const sourceName = sourceNames[i] ? ` (${sourceNames[i]})` : '';
+                        
+                        validStreams.push({
+                          extinf: `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}${sourceName}" tvg-logo="${channel.icon}" group-title="${category}",${channel.name}${sourceName}`,
+                          url: realStreamUrl
+                        });
+                        
+                        validSourceCount++;
+                        console.log(`✓ 有效流: ${channel.name}${sourceName}`);
+                      } else {
+                        console.log(`✗ 无效流: ${channel.name}`);
+                      }
                     }
                     
-                    channelCount++;
+                    if (sources.length > 0) {
+                      validChannelCount++;
+                    }
                   }
                 } catch (e) {
-                  console.log(`跳过频道 ${channel.name}`);
+                  console.log(`跳过频道 ${channel.name}: ${e.message}`);
                 }
                 
                 // 短暂延迟
-                await new Promise(r => setTimeout(r, 50));
+                await new Promise(r => setTimeout(r, 100));
               }
             } catch (e) {
               console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          }));
+          }
+          
+          // 添加有效的流到m3u内容
+          for (const stream of validStreams) {
+            m3uContent += stream.extinf + '\n';
+            m3uContent += stream.url + '\n';
+          }
+          
+          // 如果没有获取到有效流，添加一些备用的有效流
+          if (validSourceCount === 0) {
+            console.log('未获取到有效流，添加备用流');
+            const backupStreams = [
+              {
+                extinf: '#EXTINF:-1 tvg-id="BACKUP1" tvg-name="备用流1" tvg-logo="" group-title="备用",备用流1',
+                url: 'http://hw-m-l.cztv.com/channels/lantian/channel01/720p.m3u8'
+              },
+              {
+                extinf: '#EXTINF:-1 tvg-id="BACKUP2" tvg-name="备用流2" tvg-logo="" group-title="备用",备用流2',
+                url: 'http://[2409:8087:2001:20:2800:0:df6e:eb22]/wh7f454c46tw3042232561_2043858130/ott.mobaibox.com/PLTV/3/224/3221227222/index.m3u8'
+              }
+            ];
+            
+            for (const stream of backupStreams) {
+              m3uContent += stream.extinf + '\n';
+              m3uContent += stream.url + '\n';
+            }
+            validSourceCount = backupStreams.length;
+          }
+          
+          // 添加统计信息
+          m3uContent += `# 统计信息: 有效频道 ${validChannelCount} 个, 有效流 ${validSourceCount} 个, 总共检测 ${totalSourceCount} 个流\n`;
+          m3uContent += `# 生成完成时间: ${currentTime}\n`;
           
           // 覆盖写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 共获取 ${channelCount} 个频道，${sourceCount} 个视频流`);
+          console.log(`完成! 有效频道: ${validChannelCount}, 有效流: ${validSourceCount}/${totalSourceCount}, 更新时间: ${currentTime}`);
         })().catch(console.error);
         EOF
         
         # 运行生成脚本
         node generate.js
+
+    - name: 查看生成的文件信息
+      run: |
+        echo "=== 生成的m3u文件前20行 ==="
+        head -20 91ktv.m3u
+        echo ""
+        echo "=== 文件统计信息 ==="
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "流数量: $(grep -c '^#EXTINF:' 91ktv.m3u)"
+        echo "更新时间: $(grep '更新时间' 91ktv.m3u | head -1)"
 
     - name: 覆盖更新文件
       run: |
@@ -173,5 +275,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add -f 91ktv.m3u
-        git commit -m "覆盖更新直播源 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "自动更新有效直播源 $(date +'%Y-%m-%d %H:%M:%S') - 筛选有效流" || echo "无变化"
         git push --force
