@@ -46,13 +46,11 @@ jobs:
           if (!channelName) return channelName;
           
           // 只删除括号及其内容，保留其他所有字符
-          const cleanedName = channelName
+          return channelName
             .replace(/\s*\([^)]*\)/g, '')  // 删除英文括号及内容
             .replace(/\s*（[^）]*）/g, '')  // 删除中文括号及内容
             .replace(/\s*\[[^\]]*\]/g, '')  // 删除方括号及内容
             .trim();
-          
-          return cleanedName || channelName;
         }
         
         // 主函数
@@ -70,7 +68,7 @@ jobs:
           // 所有分类 - 完全保留
           const categories = [
             '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺', '教育',
-            '新闻', '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
+            '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
             '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
             '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
             '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
@@ -109,7 +107,6 @@ jobs:
                     
                     if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
                       const sources = sourceRes.data.liveSource;
-                      const sourceNames = sourceRes.data.liveSourceName || [];
                       
                       // 记录原始频道
                       originalChannels.add(channel.name);
@@ -132,8 +129,8 @@ jobs:
                           sourceUrl = sourceUrl.replace('kdsvod://', '');
                         }
                         
-                        // 修正：显示名称只使用清理后的频道名称，不添加视频流名称
-                        const displayName = cleanedName;  // 只显示频道名称，不显示线路信息
+                        // 显示名称：只使用清理后的频道名称
+                        const displayName = cleanedName;
                         
                         m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
                         m3uContent += `${sourceUrl}\n`;
@@ -143,7 +140,7 @@ jobs:
                       totalChannels++;
                     }
                   } catch (e) {
-                    console.log(`跳过频道 ${channel.name}`);
+                    console.log(`跳过频道 ${channel.name}: ${e.message}`);
                   }
                   
                   await new Promise(r => setTimeout(r, 50));
@@ -172,17 +169,23 @@ jobs:
         # 运行生成脚本
         node generate.js
 
-    - name: 验证结果
+    - name: 详细验证
       run: |
-        echo "=== 验证生成结果 ==="
+        echo "=== 文件验证 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
         echo "总行数: $(wc -l < 91ktv.m3u)"
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
         echo "=== 显示名称验证 ==="
-        echo "显示名称示例（应该只有频道名称，没有线路信息）:"
+        echo "前10个显示名称:"
         grep '^#EXTINF' 91ktv.m3u | head -10 | sed 's/.*,//' | while read name; do
+          echo "  - $name"
+        done
+        echo ""
+        echo "=== 频道名称清理验证 ==="
+        echo "原始频道名称示例:"
+        grep -o 'tvg-name="[^"]*"' 91ktv.m3u | head -5 | sed 's/tvg-name="//;s/"//' | while read name; do
           echo "  - $name"
         done
         echo ""
@@ -194,5 +197,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新直播源 - 纯频道名称显示 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "完美更新直播源 $(date +'%Y-%m-%d %H:%M:%S')" || echo "无变化"
         git push
