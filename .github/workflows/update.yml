@@ -53,7 +53,6 @@ jobs:
         
         // 快速URL有效性预测（不进行网络请求）
         function predictUrlValidity(url) {
-          // 基于URL格式的简单预测，不进行实际网络请求
           if (!url) return false;
           
           // 检查基本URL格式
@@ -99,16 +98,22 @@ jobs:
             }
           }
           
-          // 默认认为有效（避免过多误判）
+          // 默认认为有效
           return true;
         }
         
-        // 主函数 - 快速生成，包含统计但不进行网络验证
+        // 主函数 - 确保顶端信息完整
         (async () => {
           console.log('开始生成91看电视直播源...');
           const currentTime = getBeijingTime();
+          
+          // 构建M3U内容 - 确保顶端信息在最前面
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
+          m3uContent += `# 生成方式: GitHub Actions自动更新\n`;
+          m3uContent += `# 数据来源: 91看电视API\n`;
+          m3uContent += `# 频道名称: 已清理括号内容\n`;
+          m3uContent += `# 有效性检查: 基于URL格式预测\n\n`;
           
           let totalChannels = 0;
           let totalStreams = 0;
@@ -122,10 +127,7 @@ jobs:
             '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
             '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
             '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
-            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川', '深圳', '厦门', '大连',
-            '青岛', '宁波', '沈阳', '长春', '哈尔滨', '石家庄', '太原', '呼和浩特', '郑州',
-            '武汉', '长沙', '南昌', '福州', '南宁', '海口', '成都', '贵阳', '昆明', '西安',
-            '兰州', '西宁', '银川', '乌鲁木齐', '台北', '香港', '澳门'
+            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
           ];
           
           // 存储频道信息
@@ -134,8 +136,8 @@ jobs:
           
           console.log(`开始处理 ${categories.length} 个分类...`);
           
-          // 并发处理所有分类
-          await Promise.all(categories.map(async (category) => {
+          // 处理所有分类
+          for (const category of categories) {
             try {
               console.log(`处理分类: ${category}`);
               
@@ -186,7 +188,7 @@ jobs:
                           sourceUrl = sourceUrl.replace('kdsvod://', '');
                         }
                         
-                        // 预测URL有效性（不进行网络请求）
+                        // 预测URL有效性
                         const isPredictedValid = predictUrlValidity(sourceUrl);
                         if (isPredictedValid) {
                           predictedValidStreams++;
@@ -218,7 +220,7 @@ jobs:
             } catch (e) {
               console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          }));
+          }
           
           // 如果没有获取到数据，添加示例数据确保文件不为空
           if (totalStreams === 0) {
@@ -236,12 +238,12 @@ jobs:
               m3uContent += `#EXTINF:-1 tvg-id="${example.name}" tvg-name="${cleanedName}" group-title="${example.group}",${cleanedName}\n`;
               m3uContent += `${example.url}\n`;
               totalStreams++;
-              predictedValidStreams++; // 示例数据都认为是有效的
+              predictedValidStreams++;
             }
             totalChannels = examples.length;
           }
           
-          // 添加详细的统计信息
+          // 添加统计信息
           m3uContent += `\n# 统计信息:\n`;
           m3uContent += `# 处理分类数: ${categories.length}\n`;
           m3uContent += `# 原始频道数: ${originalChannels.size}\n`;
@@ -249,7 +251,7 @@ jobs:
           m3uContent += `# 视频流总数: ${totalStreams}\n`;
           m3uContent += `# 预测有效流: ${predictedValidStreams}\n`;
           m3uContent += `# 预测无效流: ${predictedInvalidStreams}\n`;
-          m3uContent += `# 预测有效率: ${((predictedValidStreams / totalStreams) * 100).toFixed(1)}%\n`;
+          m3uContent += `# 预测有效率: ${totalStreams > 0 ? ((predictedValidStreams / totalStreams) * 100).toFixed(1) : 0}%\n`;
           m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
           m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
           m3uContent += `# 注意: 有效性为预测值，未进行实际网络验证\n`;
@@ -263,7 +265,7 @@ jobs:
           console.log(`视频流总数: ${totalStreams}`);
           console.log(`预测有效流: ${predictedValidStreams}`);
           console.log(`预测无效流: ${predictedInvalidStreams}`);
-          console.log(`预测有效率: ${((predictedValidStreams / totalStreams) * 100).toFixed(1)}%`);
+          console.log(`预测有效率: ${totalStreams > 0 ? ((predictedValidStreams / totalStreams) * 100).toFixed(1) : 0}%`);
           console.log(`原始频道: ${originalChannels.size}, 清理后: ${cleanedChannels.size}`);
         })().catch(error => {
           console.error('程序执行错误:', error);
@@ -271,6 +273,8 @@ jobs:
           const currentTime = getBeijingTime();
           let content = '#EXTM3U\n';
           content += `# 91ktv直播源更新时间: ${currentTime}\n`;
+          content += `# 生成方式: GitHub Actions自动更新\n`;
+          content += `# 状态: 生成过程中出现错误\n\n`;
           content += `#EXTINF:-1 tvg-id="ERROR" tvg-name="程序错误" group-title="错误",程序错误\n`;
           content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
           content += `\n# 生成完成时间: ${currentTime}\n`;
@@ -282,24 +286,26 @@ jobs:
         echo "开始生成直播源文件..."
         node generate.js
 
-    - name: 快速验证生成结果
+    - name: 验证顶端信息
       run: |
-        echo "=== 快速验证 ==="
+        echo "=== 验证顶端信息 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
         echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo ""
+        echo "=== 文件顶端内容 ==="
+        head -10 91ktv.m3u
+        echo ""
+        echo "=== 视频流数量 ==="
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
-        echo "=== 文件头预览 ==="
-        head -3 91ktv.m3u
-        echo ""
         echo "=== 统计信息 ==="
-        tail -12 91ktv.m3u
+        tail -10 91ktv.m3u
 
     - name: 覆盖更新文件
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新直播源 - 包含有效性预测统计 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "更新直播源 - 修复顶端信息 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
