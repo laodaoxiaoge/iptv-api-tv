@@ -7,7 +7,7 @@ on:
 jobs:
   generate-and-overwrite:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
@@ -41,22 +41,20 @@ jobs:
           });
         }
         
-        // 精确清理频道名称 - 只删除括号内容
+        // 清理频道名称 - 只删除括号内容
         function cleanChannelName(channelName) {
           if (!channelName) return channelName;
-          
-          // 只删除括号及其内容，保留其他所有字符
+          // 删除所有括号及其内容
           return channelName
-            .replace(/\s*\([^)]*\)/g, '')  // 删除英文括号及内容
-            .replace(/\s*（[^）]*）/g, '')  // 删除中文括号及内容
-            .replace(/\s*\[[^\]]*\]/g, '')  // 删除方括号及内容
+            .replace(/\s*\([^)]*\)/g, '')
+            .replace(/\s*（[^）]*）/g, '')
+            .replace(/\s*\[[^\]]*\]/g, '')
             .trim();
         }
         
         // 主函数
         (async () => {
           console.log('开始生成91看电视直播源...');
-          
           const currentTime = getBeijingTime();
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
@@ -65,44 +63,42 @@ jobs:
           let totalStreams = 0;
           let cleanedCount = 0;
           
-          // 所有分类 - 完全保留
+          // 所有分类
           const categories = [
             '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺', '教育',
             '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
-            '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
+            '甘肃', '湖北', '湖南', '极速', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
             '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
             '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
           ];
           
-          // 存储原始频道信息用于验证
+          // 存储频道信息
           const originalChannels = new Set();
           const cleanedChannels = new Set();
           
-          // 处理所有分类
-          for (const category of categories) {
-            console.log(`处理分类: ${category}`);
-            
+          // 并发处理所有分类
+          await Promise.all(categories.map(async (category) => {
             try {
               // 获取频道列表
               const response = await axios.get(
                 `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
-                { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+                { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
               if (response.data && Array.isArray(response.data)) {
-                console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
+                console.log(`处理分类: ${category}, 频道数: ${response.data.length}`);
                 
-                // 处理每个频道
-                for (const channel of response.data) {
-                  const nwtime = Math.floor(Date.now() / 1000);
-                  const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                  const sign = CryptoJS.MD5(srcKey).toString();
-                  
+                // 并发处理每个频道
+                await Promise.all(response.data.map(async (channel) => {
                   try {
+                    const nwtime = Math.floor(Date.now() / 1000);
+                    const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:极速ff${nwtime}20240918`;
+                    const sign = CryptoJS.MD5(srcKey).toString();
+                    
                     // 获取播放源
                     const sourceRes = await axios.get(
                       `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                      { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+                      { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
                     );
                     
                     if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
@@ -111,7 +107,7 @@ jobs:
                       // 记录原始频道
                       originalChannels.add(channel.name);
                       
-                      // 清理频道名称 - 只删除括号内容
+                      // 清理频道名称
                       const cleanedName = cleanChannelName(channel.name);
                       cleanedChannels.add(cleanedName);
                       
@@ -121,19 +117,15 @@ jobs:
                       }
                       
                       // 处理每个播放源
-                      for (let i = 0; i < sources.length; i++) {
-                        let sourceUrl = sources[i];
-                        
-                        // 处理URL协议
-                        if (sourceUrl.startsWith('kdsvod://')) {
-                          sourceUrl = sourceUrl.replace('kdsvod://', '');
+                      for (const sourceUrl of sources) {
+                        let url = sourceUrl;
+                        if (url.startsWith('kdsvod://')) {
+                          url = url.replace('kdsvod://', '');
                         }
                         
-                        // 显示名称：只使用清理后的频道名称
-                        const displayName = cleanedName;
-                        
-                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
-                        m3uContent += `${sourceUrl}\n`;
+                        // 只使用清理后的频道名称作为显示名称
+                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${cleanedName}\n`;
+                        m3uContent += `${url}\n`;
                         totalStreams++;
                       }
                       
@@ -142,52 +134,40 @@ jobs:
                   } catch (e) {
                     console.log(`跳过频道 ${channel.name}: ${e.message}`);
                   }
-                  
-                  await new Promise(r => setTimeout(r, 50));
-                }
+                }));
               }
             } catch (e) {
               console.log(`处理分类 ${category} 出错: ${e.message}`);
             }
-          }
+          }));
           
           // 添加统计信息
-          m3uContent += `\n# 统计信息:\n`;
+          m3极速uContent += `\n# 统计信息:\n`;
           m3uContent += `# 原始频道数: ${originalChannels.size}\n`;
           m3uContent += `# 清理后频道数: ${cleanedChannels.size}\n`;
           m3uContent += `# 视频流总数: ${totalStreams}\n`;
           m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
-          m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
+          m3极速uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
           
-          // 覆盖写入文件
+          // 写入文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 频道: ${totalChannels}, 流: ${totalStreams}`);
-          console.log(`原始频道: ${originalChannels.size}, 清理后: ${cleanedChannels.size}`);
+          console.log(`完成! 频道: ${totalChannels}, 流: ${totalStreams}, 清理: ${cleanedCount}`);
         })().catch(console.error);
         EOF
         
         # 运行生成脚本
         node generate.js
 
-    - name: 详细验证
+    - name: 验证结果
       run: |
-        echo "=== 文件验证 ==="
+        echo "=== 验证生成结果 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
-        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "总行数: $(wc -l < 91极速tv.m3u)"
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
-        echo "=== 显示名称验证 ==="
-        echo "前10个显示名称:"
-        grep '^#EXTINF' 91ktv.m3u | head -10 | sed 's/.*,//' | while read name; do
-          echo "  - $name"
-        done
-        echo ""
-        echo "=== 频道名称清理验证 ==="
-        echo "原始频道名称示例:"
-        grep -o 'tvg-name="[^"]*"' 91ktv.m3u | head -5 | sed 's/tvg-name="//;s/"//' | while read name; do
-          echo "  - $name"
-        done
+        echo "=== 显示名称示例 ==="
+        grep '^#EXTINF' 91ktv.m3u | head -5 | sed 's/.*,//'
         echo ""
         echo "=== 统计信息 ==="
         tail -10 91ktv.m3u
@@ -197,5 +177,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "完美更新直播源 $(date +'%Y-%m-%d %H:%M:%S')" || echo "无变化"
+        git commit -m "更新直播源 - 纯净频道名称 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
