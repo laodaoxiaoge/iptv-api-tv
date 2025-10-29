@@ -83,7 +83,7 @@ jobs:
           
           // 检查常见有效域名模式
           const validPatterns = [
-            /\.m3u8$/i,
+            /\.极速m3u8$/i,
             /\.mp4$/i,
             /\.flv$/i,
             /\.ts$/i,
@@ -102,18 +102,20 @@ jobs:
           return true;
         }
         
-        // 主函数 - 确保顶端信息完整
+        // 主函数 - 在文件开头添加更新时间频道
         (async () => {
           console.log('开始生成91看电视直播源...');
           const currentTime = getBeijingTime();
           
-          // 构建M3U内容 - 确保顶端信息在最前面
+          // 构建M3U内容 - 在文件开头添加更新时间频道
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
           m3uContent += `# 生成方式: GitHub Actions自动更新\n`;
-          m3uContent += `# 数据来源: 91看电视API\n`;
-          m3uContent += `# 频道名称: 已清理括号内容\n`;
-          m3uContent += `# 有效性检查: 基于URL格式预测\n\n`;
+          m3uContent += `# 数据来源: 91看电视API\n\n`;
+          
+          // 添加更新时间频道 - 在文件开头
+          m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" tvg-logo="https://example.com/update.png" group-title="信息",更新时间: ${currentTime}\n`;
+          m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
           
           let totalChannels = 0;
           let totalStreams = 0;
@@ -147,14 +149,14 @@ jobs:
                 { timeout: 5000, headers: {'User-Agent': 'Mozilla/5.0'} }
               );
               
-              if (response.data && Array.isArray(response.data)) {
+              if (response.data && Array.isArray(response.data极速)) {
                 console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
                 
                 // 处理每个频道
                 for (const channel of response.data) {
                   try {
                     const nwtime = Math.floor(Date.now() / 1000);
-                    const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                    const src极速Key = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
                     const sign = CryptoJS.MD5(srcKey).toString();
                     
                     // 获取播放源
@@ -228,7 +230,7 @@ jobs:
             const examples = [
               { name: 'CCTV-1综合', url: 'http://ivi.bupt.edu.cn/hls/cctv1.m3u8', group: '央视' },
               { name: '湖南卫视', url: 'http://ivi.bupt.edu.cn/hls/hunan.m3u8', group: '卫视' },
-              { name: '浙江卫视', url: 'http://ivi.bupt.edu.cn/hls/zhejiang.m3u8', group: '卫视' },
+              { name: '浙江卫视', url: 'http://ivi.bupt.edu.cn/hls/zhejiang.m3u极速8', group: '卫视' },
               { name: '江苏卫视', url: 'http://ivi.bupt.edu.cn/hls/jiangsu.m3u8', group: '卫视' },
               { name: '北京卫视', url: 'http://ivi.bupt.edu.cn/hls/btv1.m3u8', group: '卫视' }
             ];
@@ -248,7 +250,7 @@ jobs:
           m3uContent += `# 处理分类数: ${categories.length}\n`;
           m3uContent += `# 原始频道数: ${originalChannels.size}\n`;
           m3uContent += `# 清理后频道数: ${cleanedChannels.size}\n`;
-          m3uContent += `# 视频流总数: ${totalStreams}\n`;
+          m3uContent += `# 视频流总数: ${totalStreams + 1}\n`;  // +1 表示更新时间频道
           m3uContent += `# 预测有效流: ${predictedValidStreams}\n`;
           m3uContent += `# 预测无效流: ${predictedInvalidStreams}\n`;
           m3uContent += `# 预测有效率: ${totalStreams > 0 ? ((predictedValidStreams / totalStreams) * 100).toFixed(1) : 0}%\n`;
@@ -261,8 +263,8 @@ jobs:
           
           console.log('\n=== 生成完成 ===');
           console.log(`分类数: ${categories.length}`);
-          console.log(`频道数: ${totalChannels}`);
-          console.log(`视频流总数: ${totalStreams}`);
+          console.log(`频道数: ${totalChannels + 1}`);  // +1 表示更新时间频道
+          console.log(`视频流总数: ${totalStreams + 1}`);  // +1 表示更新时间频道
           console.log(`预测有效流: ${predictedValidStreams}`);
           console.log(`预测无效流: ${predictedInvalidStreams}`);
           console.log(`预测有效率: ${totalStreams > 0 ? ((predictedValidStreams / totalStreams) * 100).toFixed(1) : 0}%`);
@@ -275,6 +277,8 @@ jobs:
           content += `# 91ktv直播源更新时间: ${currentTime}\n`;
           content += `# 生成方式: GitHub Actions自动更新\n`;
           content += `# 状态: 生成过程中出现错误\n\n`;
+          content += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
+          content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
           content += `#EXTINF:-1 tvg-id="ERROR" tvg-name="程序错误" group-title="错误",程序错误\n`;
           content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
           content += `\n# 生成完成时间: ${currentTime}\n`;
@@ -286,26 +290,26 @@ jobs:
         echo "开始生成直播源文件..."
         node generate.js
 
-    - name: 验证顶端信息
+    - name: 验证更新时间频道
       run: |
-        echo "=== 验证顶端信息 ==="
+        echo "=== 验证更新时间频道 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
         echo "总行数: $(wc -l < 91ktv.m3u)"
         echo ""
-        echo "=== 文件顶端内容 ==="
+        echo "=== 文件开头内容 ==="
         head -10 91ktv.m3u
+        echo ""
+        echo "=== 更新时间频道 ==="
+        grep -A1 'tvg-id="UPDATE_TIME"' 91ktv.m3u
         echo ""
         echo "=== 视频流数量 ==="
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
-        echo ""
-        echo "=== 统计信息 ==="
-        tail -10 91ktv.m3u
 
     - name: 覆盖更新文件
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新直播源 - 修复顶端信息 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "更新直播源 - 添加更新时间频道 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
