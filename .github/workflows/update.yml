@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: 安装FFmpeg
       run: |
@@ -27,7 +29,7 @@ jobs:
     - name: 安装Node.js依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源文件（修复版）
+    - name: 生成直播源文件（修复变量错误版）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
@@ -70,25 +72,16 @@ jobs:
         
         // 使用FFmpeg命令行验证视频流
         async function validateStreamWithFFmpeg(url, timeoutSeconds = 8) {
-            const headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'http://www.91kds.cn/',
-                'Origin': 'http://www.91kds.cn'
-            };
-            
-            // 构建带header的FFmpeg命令
-            const headerArgs = Object.entries(headers).map(([key, value]) => 
-                `-headers "${key}: ${value}"`).join(' ');
-            
-            const cmd = `ffmpeg ${headerArgs} -i "${url}" -t ${timeoutSeconds} -f null - -hide_banner -loglevel error -y`;
-            
             try {
+                const cmd = `ffmpeg -i "${url}" -t ${timeoutSeconds} -f null - -hide_banner -loglevel error -y`;
+                
                 const { stderr } = await execPromise(cmd, { 
                     timeout: (timeoutSeconds + 5) * 1000 
                 });
+                
                 return true;
             } catch (error) {
-                console.error(`FFmpeg验证失败: ${url} - ${error.message}`);
+                console.log(`FFmpeg验证失败: ${url} - ${error.message}`);
                 return false;
             }
         }
@@ -115,9 +108,9 @@ jobs:
             return Promise.all(results);
         }
         
-        // 主函数 - 修复版
+        // 主函数 - 修复变量错误版
         (async () => {
-            console.log('开始生成91看电视直播源（修复版）...');
+            console.log('开始生成91看电视直播源（修复变量错误版）...');
             const startTime = Date.now();
             const currentTime = getBeijingTime();
             
@@ -178,7 +171,8 @@ jobs:
             // 第二步：获取所有播放源
             const allStreams = [];
             
-            for (const channel of all极速Channels) {
+            // 修复：变量名应该是allChannels，不是all极速Channels
+            for (const channel of allChannels) {
                 try {
                     const nwtime = Math.floor(Date.now() / 1000);
                     const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
@@ -204,7 +198,7 @@ jobs:
                         }
                     }
                     
-                    // 如果变体未成功，使用原始名称
+                    // 修复：变量名应该是sourceRes.data，不是source极速.data
                     if (!sourceRes || !sourceRes.data?.liveSource) {
                         sourceRes = await axios.get(
                             `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
@@ -333,14 +327,23 @@ jobs:
         });
         EOF
         
-        echo "开始生成直播源文件（修复版）..."
+        echo "开始生成直播源文件（修复变量错误版）..."
         node generate.js
 
-    - name: 验证特定流
+    - name: 验证生成结果
       run: |
-        echo "=== 检查特定流 ==="
-        echo "检查 utuxx.91kds.cn 流:"
+        echo "=== 生成结果验证 ==="
+        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
+        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
+        echo ""
+        echo "=== 特定流验证 ==="
+        echo "1. 检查utuxx.91kds.cn:"
         grep 'utuxx.91kds.cn' 91ktv.m3u -B1 || echo "未找到"
+        echo ""
+        echo "2. 检查zjcn-live-play.jstv.com:"
+        grep 'zjcn-live-play.jstv.com' 91ktv.m3u -B1 || echo "未找到"
         echo ""
         echo "=== 统计信息 ==="
         tail -15 91ktv.m3u
@@ -350,5 +353,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "修复特定流抓取问题 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "修复变量错误版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
