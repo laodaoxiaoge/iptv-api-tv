@@ -2,30 +2,40 @@ name: 91ktv直播源每日更新
 on: 
   workflow_dispatch:
   schedule:
-    - cron: '0 19 * * *'  # 每天UTC时间3点运行（北京时间11点）
+    - cron: '0 3 * * *'  # 每天UTC时间3点运行（北京时间11点）
 
 jobs:
   generate-and-overwrite:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
       
+    - name: 安装FFmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+        ffmpeg -version
+        
     - name: 设置Node.js环境
       uses: actions/setup-node@v4
       with:
         node-version: '20'
 
-    - name: 安装依赖
+    - name: 安装Node.js依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源文件
+    - name: 生成直播源文件（使用FFmpeg验证）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
         const CryptoJS = require('crypto-js');
         const fs = require('fs');
+        const { spawn } = require('child_process');
+        const { promisify } = require('util');
+        const exec = promisify(require('child_process').exec);
         
         // 获取北京时间
         function getBeijingTime() {
@@ -41,7 +51,7 @@ jobs:
           });
         }
         
-        // 清理频道名称 - 只删除括号内容
+        // 清理频道名称
         function cleanChannelName(channelName) {
           if (!channelName) return channelName;
           return channelName
@@ -51,19 +61,31 @@ jobs:
             .trim();
         }
         
-        // 验证视频流有效性
-        async function validateStream(url, timeout = 10000) {
+        // 使用FFmpeg命令行验证视频流
+        async function validateStreamWithFFmpeg(url, timeoutSeconds = 8) {
           try {
-            // 使用HEAD请求检查URL有效性
-            const response = await axios.head(url, {
-              timeout,
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Range': 'bytes=0-1'
-              }
+            const cmd = `ffmpeg -i "${url}" -t ${timeoutSeconds} -f null - -hide_banner -loglevel error -y`;
+            
+            const { stdout, stderr } = await exec(cmd, { 
+              timeout: (timeoutSeconds + 5) * 1000 
             });
-            return response.status >= 200 && response.status < 400;
+            
+            // 如果FFmpeg返回0且没有错误输出，说明流有效
+            return true;
           } catch (error) {
+            // 检查错误类型
+            if (error.code === 'ETIMEDOUT' || error.signal === 'SIGTERM') {
+              console.log(`FFmpeg验证超时: ${url}`);
+            } else if (error.stderr) {
+              const errorMsg = error.stderr.toLowerCase();
+              if (errorMsg.includes('connection timed out') || 
+                  errorMsg.includes('invalid data') ||
+                  errorMsg.includes('protocol not found') ||
+                  errorMsg.includes('403 forbidden') ||
+                  errorMsg.includes('404 not found')) {
+                console.log(`FFmpeg验证失败: ${url} - ${errorMsg.split('\n')[0]}`);
+              }
+            }
             return false;
           }
         }
@@ -90,9 +112,9 @@ jobs:
           return Promise.all(results);
         }
         
-        // 主函数 - 优化版本：先获取所有数据，再验证视频流
+        // 主函数
         (async () => {
-          console.log('开始生成91看电视直播源（优化版本）...');
+          console.log('开始生成91看电视直播源（FFmpeg验证版）...');
           const startTime = Date.now();
           const currentTime = getBeijingTime();
           
@@ -108,6 +130,7 @@ jobs:
           let validStreams = 0;
           let invalidStreams = 0;
           let cleanedCount = 0;
+          let ffmpegTimeouts = 0;
           
           // 所有分类
           const categories = [
@@ -120,23 +143,21 @@ jobs:
           
           console.log(`开始处理 ${categories.length} 个分类...`);
           
-          // 第一步：一次性获取所有频道信息
+          // 第一步：获取所有频道信息
           const allChannels = [];
           
           for (const category of categories) {
             try {
               console.log(`获取分类: ${category}`);
               
-              // 获取频道列表
               const response = await axios.get(
                 `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
-                { timeout: 15000 }
+                { timeout: 10000 }
               );
               
               if (response.data && Array.isArray(response.data)) {
                 console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
                 
-                // 为每个频道添加分类信息
                 for (const channel of response.data) {
                   allChannels.push({
                     ...channel,
@@ -151,7 +172,7 @@ jobs:
           
           console.log(`总共获取了 ${allChannels.length} 个频道信息`);
           
-          // 第二步：一次性获取所有播放源信息
+          // 第二步：获取所有播放源
           const allStreams = [];
           
           for (const channel of allChannels) {
@@ -160,10 +181,9 @@ jobs:
               const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
               const sign = CryptoJS.MD5(srcKey).toString();
               
-              // 获取播放源
               const sourceRes = await axios.get(
                 `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                { timeout: 15000 }
+                { timeout: 10000 }
               );
               
               if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
@@ -178,11 +198,10 @@ jobs:
                   cleanedCount++;
                 }
                 
-                // 准备所有视频流信息
+                // 准备所有视频流
                 for (let i = 0; i < sources.length; i++) {
                   let sourceUrl = sources[i];
                   
-                  // 处理URL协议
                   if (sourceUrl.startsWith('kdsvod://')) {
                     sourceUrl = sourceUrl.replace('kdsvod://', '');
                   }
@@ -207,29 +226,25 @@ jobs:
           
           console.log(`总共获取了 ${allStreams.length} 个视频流信息`);
           
-          // 第三步：并发验证所有视频流（并发数20，超时10秒）
-          console.log(`开始验证 ${allStreams.length} 个视频流...`);
+          // 第三步：使用FFmpeg验证视频流（并发15）
+          console.log(`开始使用FFmpeg验证 ${allStreams.length} 个视频流...`);
           
           const validationResults = await processWithConcurrency(
             allStreams,
-            20, // 并发数20
+            15, // FFmpeg验证并发数稍微降低
             async (stream) => {
-              try {
-                const isValid = await validateStream(stream.url, 10000); // 超时10秒
-                return {
-                  ...stream,
-                  isValid: isValid
-                };
-              } catch (error) {
-                return {
-                  ...stream,
-                  isValid: false
-                };
+              const isValid = await validateStreamWithFFmpeg(stream.url, 8);
+              if (!isValid) {
+                ffmpegTimeouts++;
               }
+              return {
+                ...stream,
+                isValid: isValid
+              };
             }
           );
           
-          // 第四步：只添加有效的视频流
+          // 第四步：只输出有效视频流
           for (const result of validationResults) {
             if (result.isValid) {
               m3uContent += `#EXTINF:-1 tvg-id="${result.channel.ename}" tvg-name="${result.cleanedName}" tvg-logo="${result.channel.icon}" group-title="${result.category}",${result.cleanedName}\n`;
@@ -253,10 +268,12 @@ jobs:
           m3uContent += `# 无效视频流: ${invalidStreams}\n`;
           m3uContent += `# 有效率: ${totalStreams > 0 ? ((validStreams / totalStreams) * 100).toFixed(1) : 0}%\n`;
           m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
-          m3uContent += `# 验证超时: 10秒\n`;
-          m3uContent += `# 并发数: 20\n`;
+          m3uContent += `# FFmpeg验证超时: ${ffmpegTimeouts} 个\n`;
+          m3uContent += `# 验证超时: 8秒\n`;
+          m3uContent += `# 并发数: 15\n`;
           m3uContent += `# 生成耗时: ${duration}秒\n`;
           m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
+          m3uContent += `# 验证方式: FFmpeg命令行验证\n`;
           
           fs.writeFileSync('91ktv.m3u', m3uContent);
           
@@ -267,25 +284,32 @@ jobs:
           console.log(`有效流: ${validStreams}`);
           console.log(`无效流: ${invalidStreams}`);
           console.log(`有效率: ${totalStreams > 0 ? ((validStreams / totalStreams) * 100).toFixed(1) : 0}%`);
-          console.log(`频道名称清理: ${cleanedCount} 个`);
+          console.log(`FFmpeg验证超时: ${ffmpegTimeouts} 个`);
           console.log(`耗时: ${duration}秒`);
         })().catch(error => {
           console.error('程序执行错误:', error);
-          // 确保即使出错也生成文件
           const currentTime = getBeijingTime();
           let content = '#EXTM3U\n';
           content += `# 91ktv直播源更新时间: ${currentTime}\n\n`;
-          content += `#EXTINF:-1 tvg-id="ERROR" tvg-name="生成错误" group-title="极速错误",生成错误\n`;
+          content += `#EXTINF:-1 tvg-id="ERROR" tvg-name="生成错误" group-title="错误",生成错误\n`;
           content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
           content += `\n# 生成完成时间: ${currentTime}\n`;
           fs.writeFileSync('91ktv.m3u', content);
         });
         EOF
         
-        echo "开始生成直播源文件（优化版本）..."
+        echo "开始生成直播源文件（FFmpeg验证版）..."
         node generate.js
 
-    - name: 验证结果
+    - name: 验证FFmpeg安装
+      run: |
+        echo "=== FFmpeg版本信息 ==="
+        ffmpeg -version
+        echo ""
+        echo "=== 测试FFmpeg验证功能 ==="
+        ffmpeg -i "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" -t 3 -f null - -hide_banner -loglevel error -y && echo "✓ FFmpeg验证功能正常" || echo "✗ FFmpeg验证功能异常"
+
+    - name: 验证生成结果
       run: |
         echo "=== 生成结果验证 ==="
         echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
@@ -293,11 +317,12 @@ jobs:
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
-        echo "=== 更新时间显示 ==="
-        grep -A1 'UPDATE_TIME' 91ktv.m3u
+        echo "=== 特定流验证 ==="
+        echo "1. 检查utuxx.91kds.cn:"
+        grep 'utuxx.91kds.cn' 91ktv.m3u -B1 || echo "未找到"
         echo ""
-        echo "=== 频道名称示例（已清理括号内容）==="
-        grep '^#EXTINF' 91ktv.m3u | head -5 | sed 's/.*,//'
+        echo "2. 检查zjcn-live-play.jstv.com:"
+        grep 'zjcn-live-play.jstv.com' 91ktv.m3u -B1 || echo "未找到"
         echo ""
         echo "=== 统计信息 ==="
         tail -15 91ktv.m3u
@@ -307,5 +332,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "优化更新直播源 - 先获取数据再验证 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "FFmpeg验证版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
