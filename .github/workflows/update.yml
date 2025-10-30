@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: 安装FFmpeg
       run: |
@@ -27,7 +29,7 @@ jobs:
     - name: 安装Node.js依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源文件（真正分步版）
+    - name: 生成直播源文件（修复频道串台问题）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
@@ -61,47 +63,69 @@ jobs:
             .trim();
         }
         
+        // 验证频道信息一致性
+        function validateChannelConsistency(channel, streamUrl) {
+          // 检查频道名称和URL是否匹配
+          const channelName = channel.name.toLowerCase();
+          const url = streamUrl.toLowerCase();
+          
+          // 定义频道名称和URL关键词的映射
+          const channelKeywords = {
+            'cctv5': ['cctv5', 'cctv-5', '体育频道'],
+            'cctv1': ['cctv1', 'cctv-1', '综合频道'],
+            '湖南卫视': ['湖南', 'hunan', 'hunan卫视'],
+            '浙江卫视': ['浙江', 'zhejiang', 'zjws'],
+            '江苏卫视': ['江苏', 'jiangsu', 'jsws'],
+            // 添加更多频道映射...
+          };
+          
+          // 检查URL是否包含频道关键词
+          for (const [chanName, keywords] of Object.entries(channelKeywords)) {
+            for (const keyword of keywords) {
+              if (channelName.includes(keyword) && url.includes(keyword)) {
+                return true; // 匹配成功
+              }
+            }
+          }
+          
+          // 如果不匹配，记录警告
+          console.log(`⚠️ 频道信息可能不匹配: ${channel.name} -> ${streamUrl}`);
+          return false;
+        }
+        
         // 使用FFmpeg验证视频流
         async function validateStreamWithFFmpeg(url, timeoutSeconds = 5) {
             try {
-                const cmd = `ffmpeg -i "${url}" -t ${timeoutSeconds} -f null - -hide_banner -loglevel error -y`;
-                const { stderr } = await execPromise(cmd, { timeout: (timeoutSeconds + 2) * 1000 });
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-        
-        // 并发控制函数
-        async function processWithConcurrency(items, concurrency, processor) {
-            const results = [];
-            const executing = new Set();
-            
-            for (const item of items) {
-                if (executing.size >= concurrency) {
-                    await Promise.race(executing);
-                }
+                const headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Referer': 'http://www.91kds.cn/',
+                    'Accept': '*/*'
+                };
                 
-                const p = processor(item).then(result => {
-                    executing.delete(p);
-                    return result;
+                const headerArgs = Object.entries(headers).map(([key, value]) => 
+                    `-headers "${key}: ${value}"`).join(' ');
+                
+                const cmd = `ffmpeg ${headerArgs} -i "${url}" -t ${timeoutSeconds} -f null - -hide_banner -loglevel error -y`;
+                
+                const { stderr } = await execPromise(cmd, { 
+                    timeout: (timeoutSeconds + 2) * 1000 
                 });
                 
-                executing.add(p);
-                results.push(p);
+                return { isValid: true, error: null };
+            } catch (error) {
+                return { isValid: false, error: error.message };
             }
-            
-            return Promise.all(results);
         }
         
-        // 主函数 - 真正的分步实现
+        // 主函数 - 修复频道串台问题
         (async () => {
-            console.log('开始生成91看电视直播源（真正分步版）...');
+            console.log('开始生成91看电视直播源（修复频道串台问题版）...');
             const startTime = Date.now();
             const currentTime = getBeijingTime();
             
             let m3uContent = '#EXTM3U\n';
-            m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n\n`;
+            m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
+            m3uContent += `# 修复版本: 解决频道串台问题\n\n`;
             
             // 添加更新时间频道
             m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
@@ -111,7 +135,8 @@ jobs:
             let totalStreams = 0;
             let validStreams = 0;
             let invalidStreams = 0;
-            let cleanedCount = 0;
+            let consistencyWarnings = 0;
+            let huyaChannels = 0;
             
             // 所有分类
             const categories = [
@@ -124,7 +149,7 @@ jobs:
             
             console.log('=== 第一步：获取所有分类的频道信息 ===');
             
-            // 第一步：先获取所有频道信息（不获取播放源）
+            // 第一步：先获取所有频道信息（串行处理，避免并发问题）
             const allChannels = [];
             
             for (const category of categories) {
@@ -132,128 +157,235 @@ jobs:
                     console.log(`获取分类 ${category} 的频道列表...`);
                     const response = await axios.get(
                         `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
-                        { timeout: 10000 }
+                        { timeout: 15000 }
                     );
                     
                     if (response.data && Array.isArray(response.data)) {
                         console.log(`分类 ${category} 获取到 ${response.data.length} 个频道`);
                         
+                        // 记录每个频道的详细信息
                         for (const channel of response.data) {
-                            allChannels.push({
-                                ...channel,
-                                category: category
-                            });
+                            const channelInfo = {
+                                id: channel.id,
+                                name: channel.name,
+                                ename: channel.ename,
+                                icon: channel.icon,
+                                category: category,
+                                originalCategory: category, // 保存原始分类
+                                sources: [] // 初始化播放源数组
+                            };
+                            
+                            // 特别记录虎牙分类
+                            if (category === '虎牙') {
+                                huyaChannels++;
+                                console.log(`虎牙频道: ${channel.name} (${channel.ename})`);
+                            }
+                            
+                            allChannels.push(channelInfo);
                         }
                     }
                 } catch (e) {
                     console.log(`获取分类 ${category} 出错: ${e.message}`);
                 }
+                
+                // 添加延迟，避免请求过快
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
             console.log(`第一步完成！总共获取了 ${allChannels.length} 个频道信息\n`);
             
-            // 第二步：获取所有频道的播放源信息
-            console.log('=== 第二步：获取所有频道的播放源 ===');
+            // 第二步：为每个频道获取播放源（串行处理，确保数据一致性）
+            console.log('=== 第二步：获取每个频道的播放源 ===');
+            
+            for (let i = 0; i < allChannels.length; i++) {
+                const channel = allChannels[i];
+                try {
+                    console.log(`获取频道 ${channel.name} 的播放源...`);
+                    
+                    const nwtime = Math.floor(Date.now() / 1000);
+                    const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                    const sign = CryptoJS.MD5(srcKey).toString();
+                    
+                    const sourceRes = await axios.get(
+                        `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                        { timeout: 15000 }
+                    );
+                    
+                    if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                        const sources = sourceRes.data.liveSource;
+                        const sourceNames = sourceRes.data.liveSourceName || [];
+                        
+                        // 清理频道名称
+                        const cleanedName = cleanChannelName(channel.name);
+                        
+                        // 为每个播放源保存完整的频道信息
+                        for (let j = 0; j < sources.length; j++) {
+                            let sourceUrl = sources[j];
+                            if (sourceUrl.startsWith('kdsvod://')) {
+                                sourceUrl = sourceUrl.replace('kdsvod://', '');
+                            }
+                            
+                            // 验证频道一致性
+                            const isConsistent = validateChannelConsistency(channel, sourceUrl);
+                            if (!isConsistent) {
+                                consistencyWarnings++;
+                            }
+                            
+                            channel.sources.push({
+                                url: sourceUrl,
+                                name: sourceNames[j] || '',
+                                cleanedName: cleanedName,
+                                isConsistent: isConsistent,
+                                originalChannel: { // 保存完整的原始频道信息
+                                    id: channel.id,
+                                    name: channel.name,
+                                    ename: channel.ename,
+                                    category: channel.category
+                                }
+                            });
+                        }
+                        
+                        totalChannels++;
+                        console.log(`频道 ${channel.name} 获取到 ${sources.length} 个播放源`);
+                    }
+                } catch (e) {
+                    console.log(`获取频道 ${channel.name} 的播放源出错: ${e.message}`);
+                }
+                
+                // 添加延迟，避免请求过快
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            console.log(`第二步完成！总共获取了 ${allChannels.reduce((sum, ch) => sum + ch.sources.length, 0)} 个播放源\n`);
+            
+            // 第三步：验证视频流（并发处理，但保存完整的频道信息）
+            console.log('=== 第三步：验证视频流有效性 ===');
             const allStreams = [];
             
-            // 使用并发获取播放源，提高效率
-            const streamResults = await processWithConcurrency(
-                allChannels,
-                8, // 并发数8
-                async (channel) => {
-                    try {
-                        const nwtime = Math.floor(Date.now() / 1000);
-                        const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                        const sign = CryptoJS.MD5(srcKey).toString();
-                        
-                        const sourceRes = await axios.get(
-                            `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                            { timeout: 10000 }
-                        );
-                        
-                        if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
-                            const sources = sourceRes.data.liveSource;
-                            const cleanedName = cleanChannelName(channel.name);
-                            
-                            if (channel.name !== cleanedName) {
-                                cleanedCount++;
-                            }
-                            
-                            for (let i = 0; i < sources.length; i++) {
-                                let sourceUrl = sources[i];
-                                if (sourceUrl.startsWith('kdsvod://')) {
-                                    sourceUrl = sourceUrl.replace('kdsvod://', '');
-                                }
-                                
-                                allStreams.push({
-                                    url: sourceUrl,
-                                    channel: channel,
-                                    cleanedName: cleanedName,
-                                    category: channel.category
-                                });
-                            }
-                            
-                            totalChannels++;
-                            return sources.length;
-                        }
-                    } catch (e) {
-                        console.log(`获取频道 ${channel.name} 的播放源出错: ${e.message}`);
-                    }
-                    return 0;
-                }
-            );
+            // 收集所有播放源
+            allChannels.forEach(channel => {
+                channel.sources.forEach(source => {
+                    allStreams.push({
+                        url: source.url,
+                        channel: source.originalChannel, // 使用原始频道信息
+                        cleanedName: source.cleanedName,
+                        category: source.originalChannel.category,
+                        sourceName: source.name,
+                        isConsistent: source.isConsistent
+                    });
+                });
+            });
             
-            console.log(`第二步完成！总共获取了 ${allStreams.length} 个播放源\n`);
-            
-            // 第三步：验证所有视频流
-            console.log('=== 第三步：验证视频流有效性 ===');
             console.log(`开始验证 ${allStreams.length} 个视频流...`);
+            
+            // 并发验证
+            const { promisify } = require('util');
+            const processWithConcurrency = async (items, concurrency, processor) => {
+                const results = [];
+                const executing = new Set();
+                
+                for (const item of items) {
+                    if (executing.size >= concurrency) {
+                        await Promise.race(executing);
+                    }
+                    
+                    const p = processor(item).then(result => {
+                        executing.delete(p);
+                        return result;
+                    });
+                    
+                    executing.add(p);
+                    results.push(p);
+                }
+                
+                return Promise.all(results);
+            };
             
             const validationResults = await processWithConcurrency(
                 allStreams,
-                10, // 并发数10
+                8, // 降低并发数，提高稳定性
                 async (stream) => {
-                    const isValid = await validateStreamWithFFmpeg(stream.url, 5);
+                    const result = await validateStreamWithFFmpeg(stream.url, 5);
                     return {
                         ...stream,
-                        isValid: isValid
+                        isValid: result.isValid,
+                        error: result.error
                     };
                 }
             );
             
             console.log(`第三步完成！验证了 ${validationResults.length} 个视频流\n`);
             
-            // 第四步：生成最终的M3U文件
+            // 第四步：生成最终的M3U文件（确保频道信息正确）
             console.log('=== 第四步：生成M3U文件 ===');
             
-            for (const result of validationResults) {
+            // 按分类和频道分组，确保不串台
+            const streamsByCategory = {};
+            validationResults.forEach(result => {
                 if (result.isValid) {
-                    m3uContent += `#EXTINF:-1 tvg-id="${result.channel.ename}" tvg-name="${result.cleanedName}" tvg-logo="${result.channel.icon}" group-title="${result.category}",${result.cleanedName}\n`;
-                    m3uContent += `${result.url}\n`;
-                    validStreams++;
-                } else {
-                    invalidStreams++;
+                    const category = result.category;
+                    const channelKey = `${result.channel.id}-${result.channel.name}`;
+                    
+                    if (!streamsByCategory[category]) {
+                        streamsByCategory[category] = {};
+                    }
+                    
+                    if (!streamsByCategory[category][channelKey]) {
+                        streamsByCategory[category][channelKey] = {
+                            channel: result.channel,
+                            streams: []
+                        };
+                    }
+                    
+                    streamsByCategory[category][channelKey].streams.push(result);
                 }
-                totalStreams++;
+            });
+            
+            // 按分类顺序输出，确保频道信息正确
+            for (const category of categories) {
+                if (streamsByCategory[category]) {
+                    m3uContent += `# 分类: ${category}\n`;
+                    
+                    const categoryChannels = Object.values(streamsByCategory[category]);
+                    
+                    for (const channelData of categoryChannels) {
+                        const channel = channelData.channel;
+                        const streams = channelData.streams;
+                        
+                        // 使用原始频道信息，确保不串台
+                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanChannelName(channel.name)}" tvg-logo="${channel.icon}" group-title="${category}",${cleanChannelName(channel.name)}\n`;
+                        
+                        // 只使用第一个有效的流（避免重复）
+                        if (streams.length > 0) {
+                            m3uContent += `${streams[0].url}\n`;
+                            validStreams++;
+                        }
+                    }
+                    
+                    m3uContent += '\n';
+                }
             }
+            
+            totalStreams = allStreams.length;
+            invalidStreams = totalStreams - validStreams;
             
             // 添加统计信息
             const endTime = Date.now();
             const duration = Math.round((endTime - startTime) / 1000);
             
-            m3uContent += `\n# 统计信息:\n`;
+            m3uContent += `# 统计信息:\n`;
             m3uContent += `# 处理分类数: ${categories.length}\n`;
             m3uContent += `# 频道总数: ${totalChannels}\n`;
             m3uContent += `# 视频流总数: ${totalStreams}\n`;
             m3uContent += `# 有效视频流: ${validStreams}\n`;
             m3uContent += `# 无效视频流: ${invalidStreams}\n`;
             m3uContent += `# 有效率: ${totalStreams > 0 ? ((validStreams / totalStreams) * 100).toFixed(1) : 0}%\n`;
-            m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
-            m3uContent += `# 验证超时: 5秒\n`;
-            m3uContent += `# 并发数: 获取播放源8，验证流10\n`;
+            m3uContent += `# 虎牙频道数: ${huyaChannels}\n`;
+            m3uContent += `# 频道一致性警告: ${consistencyWarnings} 个\n`;
             m3uContent += `# 生成耗时: ${duration}秒\n`;
             m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
-            m3uContent += `# 处理方式: 真正分步处理\n`;
+            m3uContent += `# 修复功能: 解决频道串台问题\n`;
+            m3uContent += `# 修复功能: 串行处理确保数据一致性\n`;
             
             fs.writeFileSync('91ktv.m3u', m3uContent);
             
@@ -263,9 +395,19 @@ jobs:
             console.log(`总流数: ${totalStreams}`);
             console.log(`有效流: ${validStreams}`);
             console.log(`无效流: ${invalidStreams}`);
+            console.log(`虎牙频道: ${huyaChannels}`);
+            console.log(`频道一致性警告: ${consistencyWarnings}`);
             console.log(`有效率: ${totalStreams > 0 ? ((validStreams / totalStreams) * 100).toFixed(1) : 0}%`);
             console.log(`耗时: ${duration}秒`);
             console.log(`文件已保存: 91ktv.m3u`);
+            
+            // 输出频道一致性检查结果
+            if (consistencyWarnings > 0) {
+                console.log('\n⚠️ 发现频道一致性警告，请检查以下频道：');
+                validationResults.filter(r => !r.isConsistent).forEach(r => {
+                    console.log(`   ${r.channel.name} -> ${r.url}`);
+                });
+            }
         })().catch(error => {
             console.error('程序执行错误:', error);
             const currentTime = getBeijingTime();
@@ -278,28 +420,25 @@ jobs:
         });
         EOF
         
-        echo "开始生成直播源文件（真正分步版）..."
+        echo "开始生成直播源文件（修复频道串台问题版）..."
         node generate.js
 
-    - name: 验证生成结果
+    - name: 验证频道一致性
       run: |
-        echo "=== 生成结果验证 ==="
-        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
-        echo "总行数: $(wc -l < 91ktv.m3u)"
-        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
-        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
+        echo "=== 频道一致性验证 ==="
+        echo "检查CCTV-5相关频道:"
+        grep -A1 -B1 "CCTV-5" 91ktv.m3u | grep -E "(CCTV-5|湖南|Hunan)" || echo "未发现串台问题"
         echo ""
-        echo "=== 特定流验证 ==="
-        echo "检查utuxx.91kds.cn:"
-        grep 'utuxx.91kds.cn' 91ktv.m3u -B1 || echo "未找到"
+        echo "检查湖南卫视相关频道:"
+        grep -A1 -B1 "湖南" 91ktv.m3u | grep -E "(湖南|CCTV-5)" || echo "未发现串台问题"
         echo ""
         echo "=== 统计信息 ==="
-        tail -15 91ktv.m3u
+        tail -20 91ktv.m3u
 
     - name: 提交更新
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "真正分步处理版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "修复频道串台问题版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
