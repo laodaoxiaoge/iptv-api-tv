@@ -2,7 +2,7 @@ name: 91ktv直播源每日更新
 on: 
   workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'  # 每天UTC时间3点运行（北京时间11点）
+    - cron: '0 19 * * *'  # 每天UTC时间19点运行（北京时间3点）
 
 jobs:
   generate-m3u:
