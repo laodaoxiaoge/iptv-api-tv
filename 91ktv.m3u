@@ -1,8 +1,8 @@
 #EXTM3U
-# 91ktv直播源更新时间: 2025/10/31 11:00:38
+# 91ktv直播源更新时间: 2025/10/31 11:38:23
 # 版本: 高质量版 - 47个分类完整 + 流质量验证
 
-#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: 2025/10/31 11:00:38" group-title="信息",更新时间: 2025/10/31 11:00:38
+#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: 2025/10/31 11:38:23" group-title="信息",更新时间: 2025/10/31 11:38:23
 https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8
 
 # 分类: 央视
@@ -56,10 +56,6 @@ https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tear
 https://hlsbkmgsplive.miguvideo.com/wd_r4/peoplecn/shdiaoyu/1200/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=100
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="cctv5" tvg-name="CCTV-5体育" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="体育",[高清]CCTV-5体育
-http://u.igeizhe.com:2000/udp/238.1.78.175:7272
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hnxfpy" tvg-name="先锋乒羽" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="体育",[高清]先锋乒羽
 http://pili-live-snapshot.tv.hntvcloud.com/mg-tv/channel-1.m3u8
 #EXTVLCOPT:program-quality=80
@@ -98,10 +94,6 @@ http://www.qfly9236.cn:8888/udp/239.253.92.93:8120
 https://46240.hlsplay.aodianyun.com/tv_radio_46240/tv_channel_1811.m3u8?auth_key=4857760464-0-0-ecabcbf26d39dc20cde584db2fa2a053&extra_key=D1dJezG95YTkYytoe8tr2Qhf-jhFFJmJpij9JNzLnfjYgxE5Q69rjZT1b2VrOxeb2zvhRo107e0Ze_h5agVjcLhNxl4RzjBShtdz-pQKUqaNbHnJMUJaS637QCoHNkKlJAb5i0lkR8MlxmIB6LIGojFm8kqvpZp_pI7SG10olDg
 #EXTVLCOPT:program-quality=100
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="cctv3" tvg-name="CCTV-3综艺" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="综艺",[高清]CCTV-3综艺
-http://u.igeizhe.com:2000/udp/238.1.78.174:7264
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hnyl" tvg-name="湖南娱乐" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="综艺",[高清]湖南娱乐
 http://pili-live-snapshot.tv.hntvcloud.com/mg-tv/channel-13.m3u8
 #EXTVLCOPT:program-quality=80
@@ -120,6 +112,10 @@ https://hlsbkmgsplive.miguvideo.com/migu/kailu/cetv2/57/20240709/01.m3u8?&HlsSub
 https://hlsbkmgsplive.miguvideo.com/migu/kailu/cetv4/57/20240709/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="gdxdjy" tvg-name="现代教育" tvg-logo="http://tb.91kds.cn/tb1/gdws.jpg" group-title="教育",[高清]现代教育
+http://183.33.57.241:8686/udp/239.77.0.213:5146
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="haaytv3" tvg-name="安阳文旅频道" tvg-logo="http://tb.91kds.cn/tb1/haaytv.jpg" group-title="教育",[高清]安阳文旅频道
 http://171.8.168.226:8800/udp/239.16.20.193:11930
 #EXTVLCOPT:program-quality=110
@@ -127,10 +123,6 @@ http://171.8.168.226:8800/udp/239.16.20.193:11930
 #EXTINF:-1 tvg-id="hanytv3" tvg-name="南阳科教频道" tvg-logo="http://tb.91kds.cn/tb1/hanytv.jpg" group-title="教育",[高清]南阳科教频道
 http://utuxx.91kds.cn/live1/hanytv.m3u8?id=hanytv3&pwd=jsdecode@@User-Agent=Mozilla/5.0@@
 #EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hazzjy" tvg-name="郑州教育频道" tvg-logo="http://tb.91kds.cn/tb1/hazzjy.jpg" group-title="教育",[高清]郑州教育频道
-https://livezzutv.chinamcache.com/zb02/zb02.m3u8?auth_key=1694413413-0-0-fdccf5824fa42b4a2e285f73e7d2d12b
-#EXTVLCOPT:program-quality=100
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="zxs" tvg-name="中央新影-中学生" tvg-logo="http://tb.91kds.cn/tb1/zyxy-zxs.jpg" group-title="教育",[高清]中央新影-中学生
 http://www.qfly9236.cn:8888/udp/239.253.92.27:6106
@@ -146,10 +138,6 @@ http://tv.zhangzp.top:4022/udp/234.1.3.216:5000
 https://english-liveali.cgtn.com/hls/yypdjlctzb/yypdjlctzbcd/playlist.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hawwbk" tvg-name="文物宝库" tvg-logo="http://tb.91kds.cn/tb1/haws.jpg" group-title="纪录",[高清]文物宝库
-http://60.223.72.127:8002/udp/226.0.2.110:8792
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="qjshd" tvg-name="乐游频道HD" tvg-logo="http://tb.91kds.cn/tb1/shqjs.jpg" group-title="纪录",[高清]乐游频道HD
 https://hlsbkmgsplive.miguvideo.com/migu/kailu/leyouhd/57/20230411/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=110
@@ -157,10 +145,6 @@ https://hlsbkmgsplive.miguvideo.com/migu/kailu/leyouhd/57/20230411/01.m3u8?&HlsS
 #EXTINF:-1 tvg-id="qsjl" tvg-name="求索纪录HD" tvg-logo="http://tb.91kds.cn/tb1/twtspd.jpg" group-title="纪录",[高清]求索纪录HD
 http://183.33.57.241:8686/udp/239.77.0.21:5146
 #EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hqqg" tvg-name="环球奇观" tvg-logo="http://tb.91kds.cn/tb1/bjhqqg.jpg" group-title="纪录",[高清]环球奇观
-http://60.223.72.127:8002/udp/226.0.2.111:8800
-#EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hnjyjs" tvg-name="金鹰纪实" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="纪录",[高清]金鹰纪实
 http://pili-live-snapshot.tv.hntvcloud.com/mg-tv/channel-7.m3u8
@@ -220,6 +204,10 @@ https://hlsbkmgsplive.miguvideo.com/wd_r2/virtuallive/5102010211/150/01.m3u8?&Hl
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 购物
+#EXTINF:-1 tvg-id="gdszgw" tvg-name="深圳宜和购物" tvg-logo="http://tb.91kds.cn/tb1/szws.jpg" group-title="购物",[高清]深圳宜和购物
+http://183.33.57.241:8686/udp/239.77.1.87:5146
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hatv7" tvg-name="河南欢腾购物" tvg-logo="http://tb.91kds.cn/tb1/haws.jpg" group-title="购物",[高清]河南欢腾购物
 http://www.huakangyaoye.cn:8800/udp/225.1.2.61:10360
 #EXTVLCOPT:program-quality=110
@@ -232,18 +220,6 @@ http://171.8.168.226:8800/udp/239.16.10.207:2000
 http://ocj2.kksmg.com/ocj1/ocj1.m3u8
 #EXTVLCOPT:program-quality=100
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="zsgw" tvg-name="CCTV-中视购物" tvg-logo="http://tb.91kds.cn/tb1/cctv.png" group-title="购物",[高清]CCTV-中视购物
-http://60.223.72.127:8002/udp/226.0.2.72:8488
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hqgw" tvg-name="环球购物" tvg-logo="http://tb.91kds.cn/tb1/qthqgw.jpg" group-title="购物",[高清]环球购物
-http://60.223.72.127:8002/udp/226.0.2.122:8888
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sxgw" tvg-name="优购物" tvg-logo="http://tb.91kds.cn/tb1/sxygw.jpg" group-title="购物",[高清]优购物
-http://60.223.72.127:8002/udp/226.0.2.131:8960
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 虎牙
 #EXTINF:-1 tvg-id="default_虎牙" tvg-name="虎牙[高清]" group-title="虎牙",虎牙[高清]
@@ -254,36 +230,28 @@ https://tx.hls.huya.com/huya_lol_1080p.m3u8
 http://u.igeizhe.com:2000/udp/238.1.78.111:6760
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="ahcztv2" tvg-name="池州文教生活" tvg-logo="http://tb.91kds.cn/tb1/ahcztv.jpg" group-title="安徽",[高清]池州文教生活
+http://u.igeizhe.com:2000/udp/238.1.78.148:7056
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="ahbbtv1" tvg-name="蚌埠新闻综合" tvg-logo="http://tb.91kds.cn/tb1/ahbbtv.jpg" group-title="安徽",[高清]蚌埠新闻综合
 http://u.igeizhe.com:2000/udp/238.1.78.180:7312
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 北京
+#EXTINF:-1 tvg-id="zgjt" tvg-name="中国交通北京" tvg-logo="http://tb.91kds.cn/tb1/cctv-zgjt.jpg" group-title="北京",[高清]中国交通北京
+http://183.222.206.14:8096/udp/239.93.0.142:5140
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="shdy" tvg-name="四海钓鱼" tvg-logo="http://tb.91kds.cn/tb1/bjshdy.jpg" group-title="北京",[高清]四海钓鱼
 https://hlsbkmgsplive.miguvideo.com/wd_r4/peoplecn/shdiaoyu/1200/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=100
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="zgjt" tvg-name="中国交通北京" tvg-logo="http://tb.91kds.cn/tb1/cctv-zgjt.jpg" group-title="北京",[高清]中国交通北京
-http://183.222.206.14:8096/udp/239.93.0.142:5140
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="xyl" tvg-name="生态环境频道" tvg-logo="http://tb.91kds.cn/tb1/bjsthj.jpg" group-title="北京",[高清]生态环境频道
-http://60.223.72.127:8002/udp/226.0.2.120:8872
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="yybb" tvg-name="优优宝贝" tvg-logo="http://tb.91kds.cn/tb1/bjyybb.jpg" group-title="北京",[高清]优优宝贝
-http://60.223.72.127:8002/udp/226.0.2.119:8864
-#EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 重庆
 #EXTINF:-1 tvg-id="cqbntv1" tvg-name="巴南综合频道" tvg-logo="http://tb.91kds.cn/tb1/cqbntv.jpg" group-title="重庆",[高清]巴南综合频道
 http://live.cqbntv.com/bnmc/tv0709.m3u8
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="cqyytv1" tvg-name="云阳综合频道" tvg-logo="http://tb.91kds.cn/tb1/cqyytv.jpg" group-title="重庆",[高清]云阳综合频道
-https://live.yunyangwang.com/live/dszb.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="cqws" tvg-name="重庆卫视" tvg-logo="http://tb.91kds.cn/tb1/cqws.jpg" group-title="重庆",[高清]重庆卫视
@@ -366,10 +334,6 @@ https://play.kankanlive.com/live/1743389283110297.m3u8
 https://hlsbkmgsplive.miguvideo.com/envivo_v/2018/SD/gansu/1000/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="gsjygzh" tvg-name="嘉峪关综合" tvg-logo="http://tb.91kds.cn/tb1/gsjygtv.jpg" group-title="甘肃",[高清]嘉峪关综合
-https://play.kankanlive.com/live/1754465670263218.m3u8
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="gspltv1" tvg-name="平凉新闻综合" tvg-logo="http://tb.91kds.cn/tb1/gspltv.jpg" group-title="甘肃",[高清]平凉新闻综合
 https://play.kankanlive.com/live/1694661314645984.m3u8
 #EXTVLCOPT:program-quality=80
@@ -381,7 +345,7 @@ https://play.kankanlive.com/live/1743389368540298.m3u8
 
 # 分类: 湖北
 #EXTINF:-1 tvg-id="hbgg" tvg-name="湖北公共新闻" tvg-logo="http://tb.91kds.cn/tb1/hbws.png" group-title="湖北",[高清]湖北公共新闻
-http://www.dwphic.com:9999/udp/239.69.1.40:9880
+http://www.xk8.top:8001/udp/239.69.1.40:9880
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hbjztv1" tvg-name="荆州新闻" tvg-logo="http://tb.91kds.cn/tb1/hbjztv.jpg" group-title="湖北",[高清]荆州新闻
@@ -396,8 +360,16 @@ https://jingzhou-live21.cjyun.org/10085/s10085-jingzhou-tv03.m3u8?auth_key=17671
 https://hlsbkmgsplive.miguvideo.com/wd_r2/2018/ocn/hubeiwshd/1000/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="hbwhtv1" tvg-name="武汉新闻综合" tvg-logo="http://tb.91kds.cn/tb1/hbwhtv.jpg" group-title="湖北",[高清]武汉新闻综合
+http://www.xk8.top:8001/udp/239.254.103.228:9448
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hbwhtv2" tvg-name="武汉电视剧" tvg-logo="http://tb.91kds.cn/tb1/hbwhtv.jpg" group-title="湖北",[高清]武汉电视剧
-http://swtyc.f3322.org:8880/udp/239.253.157.229:9454
+http://www.xk8.top:8001/udp/239.254.103.229:9454
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="hbxytv2" tvg-name="襄阳经济生活" tvg-logo="http://tb.91kds.cn/tb1/hbxytv.png" group-title="湖北",[高清]襄阳经济生活
+http://swtyc.f3322.org:8880/udp/239.253.157.231:9466
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
@@ -412,10 +384,6 @@ http://www.huakangyaoye.cn:8800/udp/225.1.2.97:10576
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hnjs" tvg-name="湖南经视" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="湖南",[高清]湖南经视
 http://pili-live-snapshot.tv.hntvcloud.com/mg-tv/channel-2.m3u8
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hndsj" tvg-name="湖南电视剧" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="湖南",[高清]湖南电视剧
-http://pili-live-snapshot.tv.hntvcloud.com/mg-tv/channel-10.m3u8
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hnyl" tvg-name="湖南娱乐" tvg-logo="http://tb.91kds.cn/tb1/hnws.jpg" group-title="湖南",[高清]湖南娱乐
@@ -504,10 +472,6 @@ http://www.huakangyaoye.cn:8800/udp/225.1.2.211:11404
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 内蒙古
-#EXTINF:-1 tvg-id="nmjj" tvg-name="内蒙古经济生活" tvg-logo="http://tb.91kds.cn/tb1/nmgws.jpg" group-title="内蒙古",[高清]内蒙古经济生活
-http://play1-qk.nmtv.cn/live/1686562470947181.m3u8
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="nmhhht3" tvg-name="呼和浩特影视娱乐" tvg-logo="http://tb.91kds.cn/tb1/nmhtv.jpg" group-title="内蒙古",[高清]呼和浩特影视娱乐
 http://tv.zhangzp.top:4022/udp/234.1.3.115:5000
 #EXTVLCOPT:program-quality=110
@@ -524,12 +488,24 @@ https://live.nxw.org.cn/lsdream/ogvfqcp/1000/live.m3u8
 https://live.nxw.org.cn/lsdream/3lZr8dK/1000/live.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="nmbttv1" tvg-name="包头新闻综合" tvg-logo="http://tb.91kds.cn/tb1/nmbttv.jpg" group-title="内蒙古",[高清]包头新闻综合
+http://play1-qk.nmtv.cn/live/1735546150395017.m3u8
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="nmbttv2" tvg-name="包头生活服务" tvg-logo="http://tb.91kds.cn/tb1/nmbttv.jpg" group-title="内蒙古",[高清]包头生活服务
 http://tv.zhangzp.top:4022/udp/234.1.3.124:5000
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="nmbttv3" tvg-name="包头经济频道" tvg-logo="http://tb.91kds.cn/tb1/nmbttv.jpg" group-title="内蒙古",[高清]包头经济频道
 http://tv.zhangzp.top:4022/udp/234.1.3.200:5000
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="nmxatv1" tvg-name="兴安新闻综合" tvg-logo="http://tb.91kds.cn/tb1/nmxatv.jpg" group-title="内蒙古",[高清]兴安新闻综合
+http://play1-qk.nmtv.cn/live/1735546886977046.m3u8
+#EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="nmtltv1" tvg-name="通辽新闻综合" tvg-logo="http://tb.91kds.cn/tb1/nmtltv.jpg" group-title="内蒙古",[高清]通辽新闻综合
+http://play1-qk.nmtv.cn/live/1735546745882037.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="nmhhht1" tvg-name="呼和浩特新闻综合" tvg-logo="http://tb.91kds.cn/tb1/nmhtv.jpg" group-title="内蒙古",[高清]呼和浩特新闻综合
@@ -608,8 +584,28 @@ http://60.223.72.127:8002/udp/226.0.2.131:8960
 http://60.223.72.127:8002/udp/226.0.2.201:9520
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sxtyjy" tvg-name="太原教育" tvg-logo="http://tb.91kds.cn/tb1/sxtyjy.jpg" group-title="山西",[高清]太原教育
-http://60.223.72.127:8002/udp/226.0.2.206:9560
+#EXTINF:-1 tvg-id="sxtybx" tvg-name="太原经济生活" tvg-logo="http://tb.91kds.cn/tb1/sxtytv.jpg" group-title="山西",[高清]太原经济生活
+http://60.223.72.127:8002/udp/226.0.2.202:9528
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sxtyfz" tvg-name="太原社教法制" tvg-logo="http://tb.91kds.cn/tb1/sxtytv.jpg" group-title="山西",[高清]太原社教法制
+http://60.223.72.127:8002/udp/226.0.2.203:9536
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sxtyys" tvg-name="太原影视" tvg-logo="http://tb.91kds.cn/tb1/sxtytv.jpg" group-title="山西",[高清]太原影视
+http://60.223.72.127:8002/udp/226.0.2.204:9544
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sxtywt" tvg-name="太原文体" tvg-logo="http://tb.91kds.cn/tb1/sxtytv.jpg" group-title="山西",[高清]太原文体
+http://60.223.72.127:8001/udp/226.0.2.205:9552
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sxtyjt" tvg-name="太原佰乐购" tvg-logo="http://tb.91kds.cn/tb1/sxtytv.jpg" group-title="山西",[高清]太原佰乐购
+http://60.223.72.127:8002/udp/226.0.2.215:9632
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sxyqkj" tvg-name="阳泉科教" tvg-logo="http://tb.91kds.cn/tb1/sxyqtv.jpg" group-title="山西",[高清]阳泉科教
+http://60.223.72.127:8002/udp/226.0.2.234:9784
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
@@ -618,12 +614,8 @@ http://60.223.72.127:8002/udp/226.0.2.206:9560
 https://hlsbkmgsplive.miguvideo.com/migu/kailu/shan3xiws/57/20220809/01.m3u8?&HlsSubType=&encrypt=
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="snxatv1" tvg-name="西安新闻综合" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安新闻综合
-https://xatv-yt.xiancity.cn/live/1/index.m3u8
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="snxatv2" tvg-name="西安都市频道" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安都市频道
-https://xatv-yt.xiancity.cn/live/2/index.m3u8
+#EXTINF:-1 tvg-id="snxatv3" tvg-name="西安商务资讯" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安商务资讯
+https://xatv-yt.xiancity.cn/live/3/index.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="snxatv4" tvg-name="西安戏剧影视" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安戏剧影视
@@ -632,10 +624,6 @@ https://xatv-yt.xiancity.cn/live/4/index.m3u8
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="snxatv5" tvg-name="西安丝路频道" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安丝路频道
 https://xatv-yt.xiancity.cn/live/5/index.m3u8
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="snxatv6" tvg-name="西安乐购购物" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安乐购购物
-https://xatv-yt.xiancity.cn/live/6/index.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="snxatv7" tvg-name="西安移动电视" tvg-logo="http://tb.91kds.cn/tb1/snxatv.jpg" group-title="陕西",[高清]西安移动电视
@@ -753,7 +741,7 @@ http://www.huakangyaoye.cn:8800/udp/225.1.2.61:10360
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="haydds" tvg-name="河南移动电视" tvg-logo="http://tb.91kds.cn/tb1/haws.jpg" group-title="河南",[高清]河南移动电视
-http://171.8.168.226:8800/udp/239.16.10.79:2000
+http://www.huakangyaoye.cn:8800/udp/225.1.2.190:11866
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="haly" tvg-name="梨园频道" tvg-logo="http://tb.91kds.cn/tb1/haws.jpg" group-title="河南",[高清]梨园频道
@@ -778,22 +766,18 @@ https://hlsbkmgsplive.miguvideo.com/wd-henanwssd-600/01.m3u8?&HlsSubType=&encryp
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 黑龙江
-#EXTINF:-1 tvg-id="hljheb1" tvg-name="哈尔滨新闻综合" tvg-logo="http://tb.91kds.cn/tb1/hljhebtv.jpg" group-title="黑龙江",[高清]哈尔滨新闻综合
-http://stream.hrbtv.net/xwzh/sd/live.m3u8
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="hljheb2" tvg-name="哈尔滨影视" tvg-logo="http://tb.91kds.cn/tb1/hljhebtv.jpg" group-title="黑龙江",[高清]哈尔滨影视
 http://stream.hrbtv.net/yspd/sd/live.m3u8
-#EXTVLCOPT:program-quality=80
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="hljheb4" tvg-name="哈尔滨生活" tvg-logo="http://tb.91kds.cn/tb1/hljhebtv.jpg" group-title="黑龙江",[高清]哈尔滨生活
-http://stream.hrbtv.net/shpd/sd/live.m3u8
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 天津
 #EXTINF:-1 tvg-id="tjjntv1" tvg-name="津南一套" tvg-logo="http://tb.91kds.cn/tb1/tjjntv.jpg" group-title="天津",[高清]津南一套
 https://play.jinnantv.top/live/JNTV1.flv
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="tjwqtv1" tvg-name="武清综合频道" tvg-logo="http://tb.91kds.cn/tb1/tjwqtv.jpg" group-title="天津",[高清]武清综合频道
+http://tvpull.smartwq.cn/wqlive/convergencemedia/playlist.m3u8
 #EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
@@ -813,6 +797,14 @@ https://tvpull.hmgbtv.com/hmtv/channelfb0e5c505477aa44.flv
 #EXTINF:-1 tvg-id="xjyltv1" tvg-name="伊犁汉语综合" tvg-logo="http://tb.91kds.cn/tb1/xjyltv.jpg" group-title="新疆",[高清]伊犁汉语综合
 http://110.153.180.106:55555/out_1/index.m3u8
 #EXTVLCOPT:program-quality=110
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="xjktv1" tvg-name="克拉玛依汉语综合" tvg-logo="http://tb.91kds.cn/tb1/xjktv.jpg" group-title="新疆",[高清]克拉玛依汉语综合
+https://klmysjtzb.rcsxzx.com/hls/klmy1.m3u8
+#EXTVLCOPT:program-quality=100
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="xjktv2" tvg-name="克拉玛依维语综合" tvg-logo="http://tb.91kds.cn/tb1/xjktv.jpg" group-title="新疆",[高清]克拉玛依维语综合
+https://klmysjtzb.rcsxzx.com/hls/klmy2.m3u8
+#EXTVLCOPT:program-quality=100
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="xjktv3" tvg-name="克拉玛依影视剧场" tvg-logo="http://tb.91kds.cn/tb1/xjktv.jpg" group-title="新疆",[高清]克拉玛依影视剧场
 https://klmysjtzb.rcsxzx.com/hls/klmy3.m3u8
@@ -872,10 +864,6 @@ http://ali-m-l.cztv.com/channels/lantian/channel008/1080p.m3u8
 http://ali-m-l.cztv.com/channels/lantian/channel010/1080p.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="zjsmsd" tvg-name="浙江之江纪录" tvg-logo="http://tb.91kds.cn/tb1/zjws.jpg" group-title="浙江",[高清]浙江之江纪录
-http://ali-m-l.cztv.com/channels/lantian/channel012/1080p.m3u8
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="zjhyg" tvg-name="好易购" tvg-logo="http://tb.91kds.cn/tb1/zjws.jpg" group-title="浙江",[高清]好易购
 http://ali-m-l.cztv.com/channels/lantian/channel011/1080p.m3u8
 #EXTVLCOPT:program-quality=110
@@ -890,14 +878,6 @@ https://l.cztvcloud.com/channels/lantian/sxchannel02/1080p.m3u8
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 广西
-#EXTINF:-1 tvg-id="gxyltv1" tvg-name="玉林新闻综合" tvg-logo="http://tb.91kds.cn/tb1/gxyltv.jpg" group-title="广西",[高清]玉林新闻综合
-http://51742.hlsplay.aodianyun.com/tv_radio_51742/tv_channel_3289.m3u8?auth_key=4846965841-0-0-9764667fa15da8675d9343a9d685e93b&extra_key=3G7phQNujucfjDfVZX7XtFsfMjeELWIZpjNRADdYpRWOUdAykIw7RkxbAmiF9U934MKf8LNlRPUVp9ooT4UEvKJQlaJrZuMqJnw-UvayII5G4kw7jFgAqhhjpD4DC7gyZEtynT7zMnF8xzE3J1g6soaagSkmkag_tsjqRTH1zeM
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="gxnntv1" tvg-name="南宁新闻综合" tvg-logo="http://tb.91kds.cn/tb1/gxnntv.png" group-title="广西",[高清]南宁新闻综合
-https://hls.nntv.cn/nnlive/XWZH_24.m3u8
-#EXTVLCOPT:program-quality=100
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="gxnntv2" tvg-name="南宁影视娱乐" tvg-logo="http://tb.91kds.cn/tb1/gxnntv.png" group-title="广西",[高清]南宁影视娱乐
 https://hls.nntv.cn/nnlive/YSYL_244.m3u8
 #EXTVLCOPT:program-quality=100
@@ -922,33 +902,25 @@ https://hlsbkmgsplive.miguvideo.com/wd_r1/2018/nfmedia/nfys/1000/01.m3u8?&HlsSub
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 分类: 四川
-#EXTINF:-1 tvg-id="sctv2" tvg-name="四川经济频道" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川经济频道
-http://hhska.3322.org:8096/udp/239.93.1.101:5140
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sctv3" tvg-name="四川文化旅游" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川文化旅游
-http://183.222.206.14:18097/udp/239.93.1.102:5140
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sctv5" tvg-name="四川影视文艺" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川影视文艺
-http://hhska.3322.org:8096/udp/239.93.0.166:5140
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sctv7" tvg-name="四川妇女儿童" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川妇女儿童
-http://hhska.3322.org:8096/udp/239.93.0.219:5140
-#EXTVLCOPT:program-quality=110
-#KODIPROP:inputstream.adaptive.manifest_type=hls
 #EXTINF:-1 tvg-id="sctv8" tvg-name="四川科教频道" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川科教频道
 http://182.150.115.21:8030/pcgacg/pcgacg_0.m3u8
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="scemdy" tvg-name="四川峨眉电影" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川峨眉电影
-http://hhska.3322.org:8096/udp/239.93.0.252:5140
+#EXTINF:-1 tvg-id="sccdtv8" tvg-name="成都每日购物" tvg-logo="http://tb.91kds.cn/tb1/sccdtv.png" group-title="四川",[高清]成都每日购物
+http://183.222.206.14:18097/udp/239.93.0.22:1252
 #EXTVLCOPT:program-quality=110
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#EXTINF:-1 tvg-id="sccdtv8" tvg-name="成都每日购物" tvg-logo="http://tb.91kds.cn/tb1/sccdtv.png" group-title="四川",[高清]成都每日购物
-http://hhska.3322.org:8096/udp/239.93.0.22:1252
-#EXTVLCOPT:program-quality=110
+#EXTINF:-1 tvg-id="sctv5" tvg-name="四川影视文艺" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川影视文艺
+http://183.222.206.14:18097/udp/239.93.0.166:5140
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="sctv7" tvg-name="四川妇女儿童" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川妇女儿童
+http://183.222.206.14:18097/udp/239.93.0.219:5140
+#EXTVLCOPT:program-quality=80
+#KODIPROP:inputstream.adaptive.manifest_type=hls
+#EXTINF:-1 tvg-id="scemdy" tvg-name="四川峨眉电影" tvg-logo="http://tb.91kds.cn/tb1/scws.png" group-title="四川",[高清]四川峨眉电影
+http://183.222.206.14:18097/udp/239.93.0.252:5140
+#EXTVLCOPT:program-quality=80
 #KODIPROP:inputstream.adaptive.manifest_type=hls
 
 # 统计信息:
@@ -961,11 +933,11 @@ http://hhska.3322.org:8096/udp/239.93.0.22:1252
 # 无效流: 1855
 # 高质量比例: 12.2%
 # 质量分布:
-#   1080p/4K: 146
-#   720p: 28
+#   1080p/4K: 143
+#   720p: 27
 #   H.265: 8
 #   H.264: 251
-# 生成耗时: 1669秒
-# 生成完成时间: 2025/10/31 11:28:27
+# 生成耗时: 1746秒
+# 生成完成时间: 2025/10/31 12:07:29
 # 版本: 高质量版 - FFmpeg流质量验证
 # 特点: 优先高质量流，包含分辨率/编码信息
