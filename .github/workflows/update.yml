@@ -7,13 +7,11 @@ on:
 jobs:
   generate-and-overwrite:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     
     steps:
     - name: 检出仓库
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: 设置Node.js环境
       uses: actions/setup-node@v4
@@ -21,12 +19,13 @@ jobs:
         node-version: '20'
 
     - name: 安装依赖
-      run: npm install axios
+      run: npm install axios crypto-js
 
-    - name: 生成直播源文件（简单完整版）
+    - name: 生成直播源文件（无切片版）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
+        const CryptoJS = require('crypto-js');
         const fs = require('fs');
         
         // 获取北京时间
@@ -43,18 +42,33 @@ jobs:
           });
         }
         
-        // 主函数 - 简单完整版
+        // 清理频道名称
+        function cleanChannelName(channelName) {
+          if (!channelName) return channelName;
+          return channelName
+            .replace(/\s*\([^)]*\)/g, '')
+            .replace(/\s*（[^）]*）/g, '')
+            .replace(/\s*\[[^\]]*\]/g, '')
+            .trim();
+        }
+        
+        // 主函数 - 无切片版
         (async () => {
-          console.log('开始生成91看电视直播源（简单完整版）...');
+          console.log('开始生成91看电视直播源（无切片版）...');
           const startTime = Date.now();
           const currentTime = getBeijingTime();
           
           let m3uContent = '#EXTM3U\n';
-          m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n\n`;
+          m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
+          m3uContent += `# 版本: 无切片版 - 每个频道只保留主要播放源\n\n`;
           
           // 添加更新时间频道
           m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
           m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
+          
+          let totalChannels = 0;
+          let totalStreams = 0;
+          let validStreams = 0;
           
           // 所有分类
           const categories = [
@@ -65,12 +79,9 @@ jobs:
             '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
           ];
           
-          console.log(`处理 ${categories.length} 个分类...`);
+          console.log(`开始处理 ${categories.length} 个分类...`);
           
-          let totalChannels = 0;
-          let totalStreams = 0;
-          
-          // 为每个分类获取频道和播放源
+          // 为每个分类生成内容
           for (const category of categories) {
             try {
               console.log(`处理分类: ${category}`);
@@ -78,7 +89,7 @@ jobs:
               // 获取频道列表
               const response = await axios.get(
                 `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
-                { timeout: 10000 }
+                { timeout: 15000 }
               );
               
               if (response.data && Array.isArray(response.data)) {
@@ -86,49 +97,60 @@ jobs:
                 
                 m3uContent += `# 分类: ${category}\n`;
                 
-                // 处理每个频道
+                // 处理每个频道（只保留主要播放源）
                 for (const channel of response.data) {
                   try {
+                    const nwtime = Math.floor(Date.now() / 1000);
+                    const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                    const sign = CryptoJS.MD5(srcKey).toString();
+                    
                     // 获取播放源
-                    const sourceResponse = await axios.get(
-                      `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}`,
-                      { timeout: 10000 }
+                    const sourceRes = await axios.get(
+                      `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
+                      { timeout: 15000 }
                     );
                     
-                    if (sourceResponse.data?.liveSource && Array.isArray(sourceResponse.data.liveSource)) {
-                      const sources = sourceResponse.data.liveSource;
+                    if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                      const sources = sourceRes.data.liveSource;
                       
-                      // 使用第一个播放源
+                      // 清理频道名称
+                      const cleanedName = cleanChannelName(channel.name);
+                      
+                      // 只使用第一个播放源（不保留切片）
                       if (sources.length > 0) {
-                        let url = sources[0];
-                        if (url.startsWith('kdsvod://')) {
-                          url = url.replace('kdsvod://', '');
+                        let sourceUrl = sources[0];
+                        
+                        // 处理URL协议
+                        if (sourceUrl.startsWith('kdsvod://')) {
+                          sourceUrl = sourceUrl.replace('kdsvod://', '');
                         }
                         
-                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" group-title="${category}",${channel.name}\n`;
-                        m3uContent += `${url}\n`;
+                        // 添加频道信息（不包含切片标记）
+                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${cleanedName}\n`;
+                        m3uContent += `${sourceUrl}\n`;
                         
                         totalChannels++;
                         totalStreams++;
+                        validStreams++;
                       }
                     }
                   } catch (e) {
-                    console.log(`获取频道 ${channel.name} 播放源失败: ${e.message}`);
+                    console.log(`获取频道 ${channel.name} 的播放源出错: ${e.message}`);
                   }
                 }
                 
                 m3uContent += '\n';
               }
             } catch (e) {
-              console.log(`获取分类 ${category} 失败: ${e.message}`);
+              console.log(`处理分类 ${category} 出错: ${e.message}`);
               
-              // 即使失败也保留分类
+              // 即使出错也确保分类显示
               m3uContent += `# 分类: ${category}\n`;
-              m3uContent += `#EXTINF:-1 tvg-id="default_${category}" tvg-name="${category}" group-title="${category}",${category}\n`;
+              m3uContent += `#EXTINF:-1 tvg-id="default_${category}" tvg-name="${category}默认频道" group-title="${category}",${category}默认频道\n`;
               m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
             }
             
-            // 简单延迟
+            // 添加延迟避免请求过快
             await new Promise(resolve => setTimeout(resolve, 500));
           }
           
@@ -137,40 +159,73 @@ jobs:
           const duration = Math.round((endTime - startTime) / 1000);
           
           m3uContent += `# 统计信息:\n`;
-          m3uContent += `# 分类总数: ${categories.length}\n`;
+          m3uContent += `# 处理分类数: ${categories.length}\n`;
           m3uContent += `# 频道总数: ${totalChannels}\n`;
           m3uContent += `# 播放源总数: ${totalStreams}\n`;
+          m3uContent += `# 有效视频流: ${validStreams}\n`;
           m3uContent += `# 生成耗时: ${duration}秒\n`;
           m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
+          m3uContent += `# 版本: 无切片版 - 每个频道只保留主要播放源\n`;
+          m3uContent += `# 特点: 简洁清晰，不包含切片和备用线路\n`;
           
           fs.writeFileSync('91ktv.m3u', m3uContent);
           
-          console.log('生成完成！');
-          console.log(`分类: ${categories.length}, 频道: ${totalChannels}, 流: ${totalStreams}, 耗时: ${duration}秒`);
+          console.log('=== 生成完成 ===');
+          console.log(`分类数: ${categories.length}`);
+          console.log(`频道数: ${totalChannels}`);
+          console.log(`播放源数: ${totalStreams}`);
+          console.log(`有效流数: ${validStreams}`);
+          console.log(`耗时: ${duration}秒`);
+          console.log(`文件已保存: 91ktv.m3u`);
           
         })().catch(error => {
-          console.error('错误:', error);
-          // 简单错误处理
+          console.error('程序执行错误:', error);
           const currentTime = getBeijingTime();
           let content = '#EXTM3U\n';
-          content += `# 生成时间: ${currentTime}\n`;
-          content += `#EXTINF:-1,错误\nhttps://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n`;
+          content += `# 91ktv直播源更新时间: ${currentTime}\n\n`;
+          
+          // 即使出错也确保所有分类都显示
+          const categories = [
+            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺', '教育',
+            '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
+            '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
+            '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
+            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
+          ];
+          
+          for (const category of categories) {
+            content += `# 分类: ${category}\n`;
+            content += `#EXTINF:-1 tvg-id="error_${category}" tvg-name="${category}（生成错误）" group-title="${category}",${category}（生成错误）\n`;
+            content += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
+          }
+          
+          content += `# 生成完成时间: ${currentTime}\n`;
+          
           fs.writeFileSync('91ktv.m3u', content);
         });
         EOF
         
-        echo "开始生成直播源文件（简单完整版）..."
+        echo "开始生成直播源文件（无切片版）..."
         node generate.js
 
-    - name: 验证结果
+    - name: 验证无切片
       run: |
-        echo "=== 验证结果 ==="
+        echo "=== 无切片验证 ==="
         echo "分类数量: $(grep -c '# 分类:' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo "播放源数量: $(grep -c '^http' 91ktv.m3u)"
         echo ""
-        echo "=== 分类列表 ==="
-        grep '# 分类:' 91ktv.m3u
+        echo "=== 检查切片标记 ==="
+        echo "切片标记数量: $(grep -c 'program=' 91ktv.m3u)"
+        echo "KODIPROP标记数量: $(grep -c 'KODIPROP' 91ktv.m3u)"
+        echo "EXTVLCOPT标记数量: $(grep -c 'EXTVLCOPT' 91ktv.m3u)"
+        echo ""
+        echo "=== 文件结构验证 ==="
+        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo ""
+        echo "=== 示例内容 ==="
+        head -30 91ktv.m3u
         echo ""
         echo "=== 统计信息 ==="
         tail -10 91ktv.m3u
@@ -180,5 +235,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "简单完整版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "无切片版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
