@@ -1,205 +1,259 @@
-name: 91ktv直播源每日更新
-on: 
-  workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'  # 每天UTC时间3点运行（北京时间11点）
+/*
+@header({
+  searchable: 2,
+  filterable: 1,
+  quickSearch: 0,
+  title: '91看电视测试',
+  author: '亮亮先森UX&蓝莓果酱UX',
+  '类型': '直播',
+  lang: 'dr2'
+})
+*/
 
-jobs:
-  generate-and-overwrite:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-    - name: 检出仓库
-      uses: actions/checkout@v4
-      
-    - name: 设置Node.js环境
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: 安装依赖
-      run: npm install axios crypto-js
-
-    - name: 生成直播源文件
-      run: |
-        cat > generate.js << 'EOF'
-        const axios = require('axios');
-        const CryptoJS = require('crypto-js');
-        const fs = require('fs');
-        
-        // 获取北京时间
-        function getBeijingTime() {
-          const now = new Date();
-          return now.toLocaleString('zh-CN', { 
-            timeZone: 'Asia/Shanghai',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          });
-        }
-        
-        // 精确清理频道名称 - 只删除括号内容
-        function cleanChannelName(channelName) {
-          if (!channelName) return channelName;
-          
-          // 只删除括号及其内容，保留其他所有字符
-          // 匹配中文和英文括号及其内容
-          const cleanedName = channelName
-            .replace(/\s*\([^)]*\)/g, '')  // 删除英文括号及内容
-            .replace(/\s*（[^）]*）/g, '')  // 删除中文括号及内容
-            .replace(/\s*\[[^\]]*\]/g, '')  // 删除方括号及内容
-            .trim();
-          
-          // 如果清理后为空，则返回原始名称
-          return cleanedName || channelName;
-        }
-        
-        // 主函数
-        (async () => {
-          console.log('开始生成91看电视直播源...');
-          
-          const currentTime = getBeijingTime();
-          let m3uContent = '#EXTM3U\n';
-          m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
-          
-          let totalChannels = 0;
-          let totalStreams = 0;
-          let cleanedCount = 0;
-          
-          // 所有分类 - 完全保留
-          const categories = [
-            '央视', '卫视', '高清', '4K', '影视', '体育', '新闻', '财经', '综艺', '教育',
-            '新闻', '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
-            '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
-            '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
-            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
-          ];
-          
-          // 存储原始频道信息用于验证
-          const originalChannels = new Set();
-          const cleanedChannels = new Set();
-          
-          // 处理所有分类
-          for (const category of categories) {
-            console.log(`处理分类: ${category}`);
-            
-            try {
-              // 获取频道列表
-              const response = await axios.get(
-                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
-                { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
-              );
-              
-              if (response.data && Array.isArray(response.data)) {
-                console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
-                
-                // 处理每个频道
-                for (const channel of response.data) {
-                  const nwtime = Math.floor(Date.now() / 1000);
-                  const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                  const sign = CryptoJS.MD5(srcKey).toString();
-                  
-                  try {
-                    // 获取播放源
-                    const sourceRes = await axios.get(
-                      `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                      { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
-                    );
-                    
-                    if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
-                      const sources = sourceRes.data.liveSource;
-                      const sourceNames = sourceRes.data.liveSourceName || [];
-                      
-                      // 记录原始频道
-                      originalChannels.add(channel.name);
-                      
-                      // 清理频道名称 - 只删除括号内容
-                      const cleanedName = cleanChannelName(channel.name);
-                      cleanedChannels.add(cleanedName);
-                      
-                      if (channel.name !== cleanedName) {
-                        console.log(`频道名称清理: "${channel.name}" -> "${cleanedName}"`);
-                        cleanedCount++;
-                      }
-                      
-                      // 处理每个播放源
-                      for (let i = 0; i < sources.length; i++) {
-                        let sourceUrl = sources[i];
-                        
-                        // 处理URL协议
-                        if (sourceUrl.startsWith('kdsvod://')) {
-                          sourceUrl = sourceUrl.replace('kdsvod://', '');
-                        }
-                        
-                        // 保留视频流名称（不清理）
-                        const sourceName = sourceNames[i] || '';
-                        
-                        // 显示名称：清理后的频道名称 + 视频流名称
-                        const displayName = sourceName ? `${cleanedName} (${sourceName})` : cleanedName;
-                        
-                        m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
-                        m3uContent += `${sourceUrl}\n`;
-                        totalStreams++;
-                      }
-                      
-                      totalChannels++;
-                    }
-                  } catch (e) {
-                    console.log(`跳过频道 ${channel.name}`);
-                  }
-                  
-                  await new Promise(r => setTimeout(r, 50));
-                }
-              }
-            } catch (e) {
-              console.log(`处理分类 ${category} 出错: ${e.message}`);
+var rule = {
+    title: '91看电视测试',
+    author: '亮亮先森UX&蓝莓果酱UX',
+    version: '20251019',
+    host: 'http://sj.91kds.cn',
+    url: 'http://sj.91kds.cn/api/get_channel.php?id=fyclass',
+    searchUrl: 'http://sj.91kds.cn/api/get_search.php?id=**&deviceId=ffffffff-da12-5a9f-0000-00002bc63564&imei=483248965895528&key=.js:getVar(\'kdskey\')&tm=.js:getVar(\'kdstime\')&desc=广东省广州市移动&mac=&version=2.1.3&isHaveFile=no&userToken=&netType=wifi&app=91ktv&channel=umeng',
+    homeUrl: 'http://sj.91kds.cn',
+    detailUrl: '',
+    searchable: 2,
+    quickSearch: 0,
+    filterable: 1,
+    class_name: '央视&卫视&高清&4K&影视&体育&动漫&财经&综艺&教育&新闻&纪录&国际&网络&购物&虎牙&安徽&北京&重庆&福建&甘肃&湖北&湖南&吉林&江苏&江西&辽宁&内蒙古&宁夏&青海&山东&山西&陕西&上海&贵州&海南&河北&河南&黑龙江&天津&新疆&西藏&云南&浙江&广西&广东&四川',
+    class_url: '央视&卫视&高清&4K&影视&体育&动漫&财经&综艺&教育&新闻&纪录&国际&网络&购物&虎牙&安徽&北京&重庆&福建&甘肃&湖北&湖南&吉林&江苏&江西&辽宁&内蒙古&宁夏&青海&山东&山西&陕西&上海&贵州&海南&河北&河南&黑龙江&天津&新疆&西藏&云南&浙江&广西&广东&四川',
+    headers: {
+        'User-Agent': 'pc'
+    },
+    编码: 'utf-8',
+    timeout: 5000,
+    limit: 20,
+    double: false,
+    play_parse: true,
+    filter: {},
+    filter_url: '',
+    一级: $js.toString(() => {
+        var res = {};
+        var items = [];
+        eval(getCryptoJS());
+        var nwtime = parseInt(new Date().getTime() / 1000) + '';
+        var html = request(input);
+        if (/ename/.test(html)) {
+            var list = JSON.parse(html);
+            for (var i = 0; i < list.length; i++) {
+                var title = list[i].name;
+                var enamee = list[i].ename;
+                var srcKey = enamee + "com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff" + nwtime + "20240918";
+                var sign = CryptoJS.MD5(srcKey).toString(CryptoJS.enc.Hex);
+                var url = "http://sjapi1.91kds.cn/api/get_source.php?ename=" + enamee + "&app=com.jiaoxiang.fangnale" +
+                    "&version=2.3.4" +
+                    "&mac=fu:ck:92:92:ff" +
+                    "&nwtime=" + nwtime +
+                    "&sign=" + sign +
+                    "&ev=20240918";
+                items.push({
+                    title: title,
+                  //  url: url,
+                    url: url + '@' + title,
+                    img: list[i].icon,
+                    desc: ""
+                });
             }
-          }
-          
-          // 添加统计信息
-          m3uContent += `\n# 统计信息:\n`;
-          m3uContent += `# 原始频道数: ${originalChannels.size}\n`;
-          m3uContent += `# 清理后频道数: ${cleanedChannels.size}\n`;
-          m3uContent += `# 视频流总数: ${totalStreams}\n`;
-          m3uContent += `# 频道名称清理: ${cleanedCount} 个\n`;
-          m3uContent += `# 生成完成时间: ${getBeijingTime()}\n`;
-          
-          // 覆盖写入文件
-          fs.writeFileSync('91ktv.m3u', m3uContent);
-          console.log(`完成! 频道: ${totalChannels}, 流: ${totalStreams}`);
-          console.log(`原始频道: ${originalChannels.size}, 清理后: ${cleanedChannels.size}`);
-        })().catch(console.error);
-        EOF
+        }
+        setResult(items);
+    }),
+    二级: $js.toString(() => {
+        let purl = input.split('@')[0];
+        let html = request(purl);
+        let data = JSON.parse(html);
         
-        # 运行生成脚本
-        node generate.js
-
-    - name: 验证结果
-      run: |
-        echo "=== 验证生成结果 ==="
-        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
-        echo "总行数: $(wc -l < 91ktv.m3u)"
-        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
-        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
-        echo ""
-        echo "=== 清理前后对比示例 ==="
-        echo "原始频道名称:"
-        grep -o 'tvg-name="[^"]*"' 91ktv.m3u | head -5 | sed 's/tvg-name="//;s/"//' | while read name; do
-          echo "  - $name"
-        done
-        echo ""
-        echo "显示名称:"
-        grep '^#EXTINF' 91ktv.m3u | head -5 | sed 's/.*,//' | while read name; do
-          echo "  - $name"
-        done
-
-    - name: 覆盖更新文件
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add 91ktv.m3u
-        git commit -m "更新直播源 - 清理频道名称括号 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
-        git push
+        // 获取频道名称
+        let vod_name = "未知频道";
+        if (input.includes('@')) {
+            vod_name = input.split('@')[1];
+        } else {
+            vod_name = data.name || data.title || "直播频道";
+        }
+        
+        VOD = {
+            vod_id: purl,
+            vod_name: vod_name,
+            vod_pic: data.icon || "",
+            vod_remarks: "直播",
+            vod_content: data.desc || "暂无简介"
+        };
+    
+        let list = data.liveSource || [];
+        let names = data.liveSourceName || [];
+        let playFrom = [];
+        let playUrl = [];
+        eval(getCryptoJS());
+        let seen = new Set();
+        let lineCounter = 1;
+    
+        list.forEach((item, j) => {
+            let rawInput = item;
+            let inputUrl = rawInput.replace(/^kdsvod:\/\//, '');
+            let urlName = names[j] || '线路' + lineCounter;
+            
+            if (inputUrl.includes('pwd=jsdecode') && inputUrl.includes('id=')) {
+                let parts = inputUrl.split('?');
+                let baseUrl = parts[0];
+                let queryStr = parts[1] || '';
+                let queryObj = {};
+                queryStr.split('&').forEach(kv => {
+                    let t = kv.split('=');
+                    if (t[0]) queryObj[t[0]] = decodeURIComponent(t[1] || '');
+                });
+                let id = queryObj['id'];
+                let bt = queryObj['bt'] || null;
+                let coreKey = (bt || '') + '_' + id;
+                
+                // 去重检查
+                if (seen.has(coreKey)) return;
+                seen.add(coreKey);
+                
+                let params = {
+                    app: 'com.jiaoxiang.fangnale',
+                    version: '2.3.4',
+                    mac: 'fu:ck:92:92:ff',
+                    utk: '',
+                    nwtime: Math.floor(Date.now() / 1000),
+                    ev: '20250113'
+                };
+                let appendStr = 'ahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu';
+                let signStr = id;
+                Object.keys(params).forEach(key => {
+                    if (key === 'tmk') return;
+                    if (key === 'app') signStr += params[key] + appendStr;
+                    else signStr += params[key];
+                });
+                
+                params.sign = CryptoJS.MD5(signStr).toString(CryptoJS.enc.Hex);
+                let finalQuery = [];
+                if (bt !== null) finalQuery.push('bt=' + bt);
+                finalQuery.push('id=' + id);
+                Object.keys(params).forEach(k => {
+                    finalQuery.push(k + '=' + encodeURIComponent(params[k]));
+                });
+                
+                let finalUrl = baseUrl + '?' + finalQuery.join('&');
+                let lineName = '线路' + lineCounter;
+                playFrom.push(lineName);
+                playUrl.push(urlName + '$' + finalUrl);
+                lineCounter++;
+                
+            } else {
+                let videoUrl;
+                if (inputUrl.startsWith('htmlplay://')) {
+                    videoUrl = inputUrl.replace('htmlplay://', '').split('#')[0];
+                } else {
+                    videoUrl = inputUrl;
+                }
+                
+                // 普通URL的去重检查
+                let urlKey = videoUrl.split('?')[0];
+                if (seen.has(urlKey)) return;
+                seen.add(urlKey);
+                
+                let referer = '';
+                if (inputUrl.includes('@@referer=')) {
+                    let tmp = inputUrl.split('@@referer=');
+                    videoUrl = tmp[0];
+                    referer = tmp[1] || '';
+                }
+                
+                let lineName = '线路' + lineCounter;
+                
+                if (referer) {
+                    let playObj = JSON.stringify({
+                        url: videoUrl,
+                        header: {
+                            Referer: referer
+                        }
+                    });
+                    playFrom.push(lineName);
+                    playUrl.push(urlName + '$' + playObj);
+                } else {
+                    playFrom.push(lineName);
+                    playUrl.push(urlName + '$' + videoUrl);
+                }
+                lineCounter++;
+            }
+        });
+        
+        VOD.vod_play_from = playFrom.join("$$$");
+        VOD.vod_play_url = playUrl.join("$$$");
+    }),
+    lazy: $js.toString(() => {
+        let url = input;
+        
+        // 如果是 JSON 格式的播放对象
+        if (url.startsWith('{')) {
+            try {
+                let playObj = JSON.parse(url);
+                if (playObj.url) {
+                    input = {
+                        parse: 0,
+                        jx: 0,
+                        url: playObj.url,
+                        header: playObj.header || {}
+                    };
+                    return;
+                }
+            } catch (e) {
+                // 如果不是有效的 JSON，继续处理
+            }
+        }
+        
+        // 处理普通 URL
+        if (url.includes('pwd=jsdecode') && url.includes('id=')) {
+            // 已经是处理过的 URL，直接使用
+            input = {
+                parse: 0,
+                jx: 0,
+                url: url
+            };
+        } else if (url.startsWith('http')) {
+            // 普通 HTTP URL
+            input = {
+                parse: 0,
+                jx: 0,
+                url: url
+            };
+        } else if (url.startsWith('video://')) {
+            // video协议
+            input = {
+                parse: 0,
+                jx: 0,
+                url: url.replace('video://', '')
+            };
+        } else {
+            // 其他情况
+            input = {
+                parse: 0,
+                jx: 0,
+                url: url
+            };
+        }
+    }),
+    搜索: $js.toString(() => {
+    }),
+    cate_exclude: "",
+    tab_exclude: "",
+    类型: "直播",
+    二级访问前: "",
+    search_encoding: "",
+    图片来源: "",
+    图片替换: "",
+    play_json: [],
+    pagecount: {},
+    proxy_rule: "",
+    sniffer: false,
+    isVideo: "",
+    tab_remove: [],
+    tab_order: [],
+    tab_rename: {}
+}
