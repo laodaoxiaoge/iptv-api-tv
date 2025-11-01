@@ -21,7 +21,7 @@ jobs:
     - name: 安装依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源（基于规则代码）
+    - name: 生成直播源（修复虎牙分类和频道名称）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
@@ -39,6 +39,18 @@ jobs:
             minute: '2-digit',
             second: '2-digit'
           });
+        }
+        
+        // 清理频道名称 - 去除括号内容
+        function cleanChannelName(channelName) {
+          if (!channelName) return channelName;
+          
+          // 删除中文和英文括号及其内容
+          return channelName
+            .replace(/\s*\([^)]*\)/g, '')  // 删除英文括号及内容
+            .replace(/\s*（[^）]*）/g, '')  // 删除中文括号及内容
+            .replace(/\s*\[[^\]]*\]/g, '')  // 删除方括号及内容
+            .trim();
         }
         
         // 生成普通签名
@@ -110,17 +122,18 @@ jobs:
         
         // 主函数
         async function main() {
-          console.log('开始生成91ktv直播源（基于规则代码）...');
+          console.log('开始生成91ktv直播源（修复虎牙分类和频道名称）...');
           const startTime = Date.now();
           const currentTime = getBeijingTime();
           
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
-          m3uContent += `# 版本: 基于规则代码 - 包含特殊URL处理\n\n`;
+          m3uContent += `# 版本: 修复虎牙分类和频道名称处理\n\n`;
           
           let totalChannels = 0;
           let totalStreams = 0;
           let specialUrlCount = 0;
+          let cleanedNamesCount = 0;
           
           // 所有分类（与规则代码一致）
           const categories = [
@@ -189,6 +202,13 @@ jobs:
                     
                     console.log(`频道 ${channel.name} 有 ${sources.length} 个播放源`);
                     
+                    // 清理频道名称
+                    const cleanedName = cleanChannelName(channel.name);
+                    if (channel.name !== cleanedName) {
+                      console.log(`频道名称清理: "${channel.name}" -> "${cleanedName}"`);
+                      cleanedNamesCount++;
+                    }
+                    
                     // 处理每个播放源
                     for (let i = 0; i < sources.length; i++) {
                       let sourceUrl = sources[i];
@@ -205,7 +225,7 @@ jobs:
                         sourceUrl = processSpecialUrl(sourceUrl);
                         if (sourceUrl !== originalUrl) {
                           specialUrlCount++;
-                          console.log(`处理特殊URL: ${channel.name} - ${sourceName}`);
+                          console.log(`处理特殊URL: ${cleanedName} - ${sourceName}`);
                         }
                       }
                       
@@ -216,9 +236,9 @@ jobs:
                       
                       // 添加频道信息和播放源
                       const displayName = sourceName ? 
-                        `${channel.name} (${sourceName})` : channel.name;
+                        `${cleanedName} (${sourceName})` : cleanedName;
                       
-                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
+                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${cleanedName}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
                       m3uContent += `${sourceUrl}\n`;
                       totalStreams++;
                     }
@@ -248,11 +268,13 @@ jobs:
           m3uContent += `# 频道总数: ${totalChannels}\n`;
           m3uContent += `# 播放源总数: ${totalStreams}\n`;
           m3uContent += `# 特殊URL处理: ${specialUrlCount} 个\n`;
+          m3uContent += `# 频道名称清理: ${cleanedNamesCount} 个\n`;
           m3uContent += `# 生成耗时: ${duration}秒\n`;
           m3uContent += `# 更新时间: ${getBeijingTime()}\n`;
-          m3uContent += `# 版本: 基于规则代码 - 完整签名处理\n`;
+          m3uContent += `# 版本: 修复虎牙分类和频道名称处理\n`;
           m3uContent += `# 包含: 普通签名(ev=20240918) + 特殊签名(ev=20250113)\n`;
           m3uContent += `# 处理: pwd=jsdecode特殊URL解密\n`;
+          m3uContent += `# 处理: 频道名称括号内容清理\n`;
           
           // 保存文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
@@ -262,13 +284,14 @@ jobs:
           console.log(`频道数: ${totalChannels}`);
           console.log(`播放源数: ${totalStreams}`);
           console.log(`特殊URL处理: ${specialUrlCount}`);
+          console.log(`频道名称清理: ${cleanedNamesCount}`);
           console.log(`耗时: ${duration}秒`);
         }
         
         main().catch(console.error);
         EOF
         
-        echo "开始生成直播源（基于规则代码）..."
+        echo "开始生成直播源（修复虎牙分类和频道名称）..."
         node generate.js
 
     - name: 验证结果
@@ -279,28 +302,34 @@ jobs:
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
+        echo "=== 虎牙分类验证 ==="
+        echo "虎牙分类频道数量: $(grep -c 'group-title="虎牙"' 91ktv.m3u)"
+        echo "虎牙播放源示例:"
+        grep -A1 'group-title="虎牙"' 91ktv.m3u | head -4
+        echo ""
+        echo "=== 频道名称清理验证 ==="
+        echo "原始频道名称示例:"
+        grep 'tvg-name=' 91ktv.m3u | head -5 | sed 's/.*tvg-name="\([^"]*\)".*/\1/'
+        echo ""
+        echo "显示名称示例:"
+        grep '^#EXTINF' 91ktv.m3u | head -5 | sed 's/.*,\(.*\)/\1/'
+        echo ""
         echo "=== 特殊URL处理验证 ==="
-        echo "包含pwd=jsdecode的URL:"
-        grep -c 'pwd=jsdecode' 91ktv.m3u || echo "0"
+        echo "包含pwd=jsdecode的URL: $(grep -c 'pwd=jsdecode' 91ktv.m3u)"
         echo "处理后的特殊URL示例:"
         grep -A1 'pwd=jsdecode' 91ktv.m3u | head -4
         echo ""
-        echo "=== 虎牙直播流验证 ==="
-        grep -A1 'group-title="虎牙"' 91ktv.m3u | head -4
-        echo ""
         echo "=== 签名参数验证 ==="
-        echo "普通签名(ev=20240918):"
-        grep -o 'ev=20240918' 91ktv.m3u | head -1
-        echo "特殊签名(ev=20250113):"
-        grep -o 'ev=20250113' 91ktv.m3u | head -1
+        echo "普通签名(ev=20240918): $(grep -c 'ev=20240918' 91ktv.m3u)"
+        echo "特殊签名(ev=20250113): $(grep -c 'ev=20250113' 91ktv.m3u)"
         echo ""
         echo "=== 统计信息 ==="
-        tail -10 91ktv.m3u
+        tail -15 91ktv.m3u
 
     - name: 提交更新
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新91ktv直播源（基于规则代码） $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "更新91ktv直播源（修复虎牙分类和频道名称） $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
