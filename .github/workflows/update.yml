@@ -21,7 +21,7 @@ jobs:
     - name: 安装依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源（修复虎牙分类和频道名称）
+    - name: 生成直播源（包含更新时间频道）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
@@ -122,13 +122,17 @@ jobs:
         
         // 主函数
         async function main() {
-          console.log('开始生成91ktv直播源（修复虎牙分类和频道名称）...');
+          console.log('开始生成91ktv直播源（包含更新时间频道）...');
           const startTime = Date.now();
           const currentTime = getBeijingTime();
           
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
-          m3uContent += `# 版本: 修复虎牙分类和频道名称处理\n\n`;
+          m3uContent += `# 版本: 包含更新时间频道\n\n`;
+          
+          // 添加更新时间频道
+          m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
+          m3uContent += `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8\n\n`;
           
           let totalChannels = 0;
           let totalStreams = 0;
@@ -271,7 +275,7 @@ jobs:
           m3uContent += `# 频道名称清理: ${cleanedNamesCount} 个\n`;
           m3uContent += `# 生成耗时: ${duration}秒\n`;
           m3uContent += `# 更新时间: ${getBeijingTime()}\n`;
-          m3uContent += `# 版本: 修复虎牙分类和频道名称处理\n`;
+          m3uContent += `# 版本: 包含更新时间频道\n`;
           m3uContent += `# 包含: 普通签名(ev=20240918) + 特殊签名(ev=20250113)\n`;
           m3uContent += `# 处理: pwd=jsdecode特殊URL解密\n`;
           m3uContent += `# 处理: 频道名称括号内容清理\n`;
@@ -291,7 +295,7 @@ jobs:
         main().catch(console.error);
         EOF
         
-        echo "开始生成直播源（修复虎牙分类和频道名称）..."
+        echo "开始生成直播源（包含更新时间频道）..."
         node generate.js
 
     - name: 验证结果
@@ -301,6 +305,10 @@ jobs:
         echo "总行数: $(wc -l < 91ktv.m3u)"
         echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
         echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
+        echo ""
+        echo "=== 更新时间频道验证 ==="
+        echo "更新时间频道:"
+        grep -A1 'tvg-id="UPDATE_TIME"' 91ktv.m3u
         echo ""
         echo "=== 虎牙分类验证 ==="
         echo "虎牙分类频道数量: $(grep -c 'group-title="虎牙"' 91ktv.m3u)"
@@ -331,5 +339,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "更新91ktv直播源（修复虎牙分类和频道名称） $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "更新91ktv直播源（包含更新时间频道） $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
