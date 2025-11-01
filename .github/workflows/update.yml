@@ -21,7 +21,7 @@ jobs:
     - name: 安装依赖
       run: npm install axios crypto-js
 
-    - name: 生成直播源（修复丢失源版）
+    - name: 生成直播源（修复丢失源版 + 嵌套M3U8处理 + 虎牙直播流）
       run: |
         cat > generate.js << 'EOF'
         const axios = require('axios');
@@ -66,15 +66,91 @@ jobs:
           return url;
         }
         
-        // 主函数 - 修复丢失源版
+        // 解析嵌套M3U8播放源
+        async function resolveNestedM3u8(url) {
+          try {
+            console.log(`解析嵌套M3U8: ${url}`);
+            
+            // 获取嵌套的M3U8内容
+            const response = await axios.get(url, {
+              timeout: 10000,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Referer': 'http://www.91kds.cn/'
+              }
+            });
+            
+            // 解析M3U8内容，提取真正的播放源
+            const m3uContent = response.data;
+            const streamUrls = [];
+            
+            // 解析M3U8文件内容
+            const lines = m3uContent.split('\n');
+            for (const line of lines) {
+              // 跳过注释行和空行
+              if (line.trim() === '' || line.startsWith('#')) continue;
+              
+              // 处理相对路径
+              if (line.startsWith('/')) {
+                const baseUrl = new URL(url);
+                streamUrls.push(`${baseUrl.origin}${line}`);
+              } else if (line.startsWith('http')) {
+                streamUrls.push(line);
+              } else {
+                // 处理相对路径
+                const basePath = url.substring(0, url.lastIndexOf('/') + 1);
+                streamUrls.push(`${basePath}${line}`);
+              }
+            }
+            
+            console.log(`解析到 ${streamUrls.length} 个播放源`);
+            return streamUrls;
+          } catch (error) {
+            console.error(`解析嵌套M3U8失败: ${error.message}`);
+            return [url]; // 返回原始URL作为备选
+          }
+        }
+        
+        // 获取虎牙直播流的专用函数
+        async function getHuyaStream(channelEname = 'huya') {
+          const nwtime = Math.floor(Date.now() / 1000);
+          
+          // 使用最新的参数（根据你提供的URL）
+          const appKey = 'com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff';
+          const srcKey = `${channelEname}${appKey}${nwtime}20250113`; // ev参数更新为20250113
+          const sign = CryptoJS.MD5(srcKey).toString();
+          
+          try {
+            console.log(`获取虎牙直播流: ${channelEname}`);
+            
+            const response = await axios.get(
+              `http://api.91kds.cn/zone/srclist?ename=${channelEname}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20250113`,
+              { timeout: 10000, headers: {'User-Agent': 'Mozilla/5.0'} }
+            );
+            
+            if (response.data?.liveSource && Array.isArray(response.data.liveSource) && response.data.liveSource.length > 0) {
+              const streamUrl = response.data.liveSource[0];
+              console.log(`成功获取虎牙直播流: ${streamUrl}`);
+              return streamUrl;
+            } else {
+              console.log('未找到虎牙直播流');
+              return null;
+            }
+          } catch (error) {
+            console.error(`获取虎牙直播流失败: ${error.message}`);
+            return null;
+          }
+        }
+        
+        // 主函数 - 修复丢失源版 + 嵌套M3U8处理 + 虎牙直播流
         async function main() {
-          console.log('开始生成直播源（修复丢失源版）...');
+          console.log('开始生成直播源（修复丢失源版 + 嵌套M3U8处理 + 虎牙直播流）...');
           const startTime = Date.now();
           const currentTime = getBeijingTime();
           
           let m3uContent = '#EXTM3U\n';
           m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
-          m3uContent += `# 版本: 修复丢失源版 - 确保所有特殊URL都被保存\n\n`;
+          m3uContent += `# 版本: 修复丢失源版 - 包含嵌套M3U8处理和虎牙直播流\n\n`;
           
           // 添加更新时间频道
           m3uContent += `#EXTINF:-1 tvg-id="UPDATE_TIME" tvg-name="更新时间: ${currentTime}" group-title="信息",更新时间: ${currentTime}\n`;
@@ -120,14 +196,25 @@ jobs:
               for (const channel of response.data) {
                 try {
                   const nwtime = Math.floor(Date.now() / 1000);
-                  const srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
-                  const sign = CryptoJS.MD5(srcKey).toString();
+                  
+                  // 特别处理虎牙分类 - 使用最新的参数
+                  let srcKey, sign, apiUrl;
+                  
+                  if (category === '虎牙') {
+                    // 使用虎牙专用参数（最新的ev参数）
+                    const appKey = 'com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff';
+                    srcKey = `${channel.ename}${appKey}${nwtime}20250113`; // ev=20250113
+                    sign = CryptoJS.MD5(srcKey).toString();
+                    apiUrl = `http://api.91kds.cn/zone/srclist?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20250113`;
+                  } else {
+                    // 其他分类使用原有参数
+                    srcKey = `${channel.ename}com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff${nwtime}20240918`;
+                    sign = CryptoJS.MD5(srcKey).toString();
+                    apiUrl = `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`;
+                  }
                   
                   // 获取播放源
-                  const sourceRes = await axios.get(
-                    `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`,
-                    { timeout: 15000 }
-                  );
+                  const sourceRes = await axios.get(apiUrl, { timeout: 15000 });
                   
                   if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
                     const sources = sourceRes.data.liveSource;
@@ -145,9 +232,32 @@ jobs:
                       // 特殊URL处理
                       sourceUrl = processSpecialUrls(sourceUrl);
                       
-                      // 添加播放源
-                      m3uContent += `${sourceUrl}\n`;
-                      totalStreams++;
+                      // 特别处理虎牙流 - 确保使用正确的域名
+                      if (category === '虎牙' && sourceUrl.includes('huya.m3u8')) {
+                        // 确保使用utuxx.91kds.cn域名
+                        sourceUrl = sourceUrl.replace(/https?:\/\/[^\/]+/, 'http://utuxx.91kds.cn');
+                      }
+                      
+                      // 处理嵌套M3U8
+                      if (sourceUrl.includes('zjcn-live-play.jstv.com') && sourceUrl.endsWith('.m3u8')) {
+                        try {
+                          const resolvedUrls = await resolveNestedM3u8(sourceUrl);
+                          
+                          // 添加所有解析出的播放源
+                          for (const resolvedUrl of resolvedUrls) {
+                            m3uContent += `${resolvedUrl}\n`;
+                            totalStreams++;
+                          }
+                        } catch (e) {
+                          console.error(`处理嵌套M3U8失败: ${e.message}`);
+                          m3uContent += `${sourceUrl}\n`;
+                          totalStreams++;
+                        }
+                      } else {
+                        // 普通播放源直接添加
+                        m3uContent += `${sourceUrl}\n`;
+                        totalStreams++;
+                      }
                     }
                     
                     totalChannels++;
@@ -192,10 +302,10 @@ jobs:
           m3uContent += `# 播放源总数: ${totalStreams}\n`;
           m3uContent += `# 生成耗时: ${duration}秒\n`;
           m3uContent += `# 更新时间: ${getBeijingTime()}\n`;
-          m3uContent += `# 版本: 修复丢失源版 - 确保特殊URL被保存\n`;
+          m3uContent += `# 版本: 修复丢失源版 - 包含嵌套M3U8处理和虎牙直播流\n`;
           m3uContent += `# 修复: utuxx.91kds.cn动态参数URL\n`;
-          m3uContent += `# 修复: zjcn-live-play.jstv.com嵌套路径URL\n`;
-          m3uContent += `# 修复: 虎牙特殊直播源URL\n`;
+          m3uContent += `# 修复: zjcn-live-play.jstv.com嵌套M3U8解析\n`;
+          m3uContent += `# 新增: 虎牙直播流使用最新API参数(ev=20250113)\n`;
           
           // 保存文件
           fs.writeFileSync('91ktv.m3u', m3uContent);
@@ -205,37 +315,40 @@ jobs:
           console.log(`频道数: ${totalChannels}`);
           console.log(`播放源数: ${totalStreams}`);
           console.log(`耗时: ${duration}秒`);
+          
+          // 特别测试虎牙直播流获取
+          console.log('\n=== 测试虎牙直播流获取 ===');
+          const huyaStream = await getHuyaStream();
+          if (huyaStream) {
+            console.log(`虎牙直播流测试成功: ${huyaStream}`);
+          }
         }
         
         main().catch(console.error);
         EOF
         
-        echo "开始生成直播源（修复丢失源版）..."
+        echo "开始生成直播源（修复丢失源版 + 嵌套M3U8处理 + 虎牙直播流）..."
         node generate.js
 
-    - name: 验证丢失源修复
+    - name: 验证功能
       run: |
-        echo "=== 丢失源修复验证 ==="
-        echo "检查央视分类下的utuxx.91kds.cn播放源:"
-        grep -A10 'group-title="央视"' 91ktv.m3u | grep 'utuxx.91kds.cn' || echo "未找到央视分类下的utuxx.91kds.cn播放源"
+        echo "=== 功能验证 ==="
+        echo "检查嵌套M3U8解析:"
+        grep -A5 'zjcn-live-play.jstv.com' 91ktv.m3u | head -10
         echo ""
-        echo "检查浙江卫视的zjcn-live-play.jstv.com播放源:"
-        grep -A10 '浙江卫视' 91ktv.m3u | grep 'zjcn-live-play.jstv.com' || echo "未找到浙江卫视的zjcn-live-play.jstv.com播放源"
+        echo "检查虎牙直播流:"
+        grep -A5 'group-title="虎牙"' 91ktv.m3u | head -10
         echo ""
-        echo "检查虎牙分类下的utuxx.91kds.cn播放源:"
-        grep -A10 'group-title="虎牙"' 91ktv.m3u | grep 'utuxx.91kds.cn' || echo "未找到虎牙分类下的utuxx.91kds.cn播放源"
+        echo "检查utuxx.91kds.cn动态参数:"
+        grep 'utuxx.91kds.cn' 91ktv.m3u | head -3
         echo ""
-        echo "=== 特殊源示例 ==="
-        echo "央视动态参数源:"
-        grep 'utuxx.91kds.cn.*id=cctv' 91ktv.m3u | head -1
+        echo "=== 文件统计 ==="
+        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
+        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
         echo ""
-        echo "浙江卫视嵌套路径源:"
-        grep 'zjcn-live-play.jstv.com' 91ktv.m3u | head -1
-        echo ""
-        echo "虎牙特殊源:"
-        grep 'utuxx.91kds.cn.*huya' 91ktv.m3u | head -1
-        echo ""
-        echo "=== 统计信息 ==="
+        echo "=== 版本信息 ==="
         tail -10 91ktv.m3u
 
     - name: 提交更新
@@ -243,5 +356,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add 91ktv.m3u
-        git commit -m "修复丢失源版直播源更新 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git commit -m "更新直播源: 嵌套M3U8处理 + 虎牙直播流 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
         git push
