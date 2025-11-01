@@ -1,0 +1,306 @@
+name: 91ktv直播源每日更新
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * *'  # 每天UTC时间19点运行（北京时间3点）
+
+jobs:
+  generate-m3u:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    
+    steps:
+    - name: 检出仓库
+      uses: actions/checkout@v4
+      
+    - name: 设置Node.js环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 安装依赖
+      run: npm install axios crypto-js
+
+    - name: 生成直播源（基于规则代码）
+      run: |
+        cat > generate.js << 'EOF'
+        const axios = require('axios');
+        const CryptoJS = require('crypto-js');
+        const fs = require('fs');
+        
+        // 获取北京时间
+        function getBeijingTime() {
+          return new Date().toLocaleString('zh-CN', { 
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+        }
+        
+        // 生成普通签名
+        function generateSign(ename, nwtime, ev = '20240918') {
+          const appKey = 'com.jiaoxiang.fangnaleahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu2.3.4fu:ck:92:92:ff';
+          const srcKey = ename + appKey + nwtime + ev;
+          return CryptoJS.MD5(srcKey).toString();
+        }
+        
+        // 生成特殊签名（用于需要解密的URL）
+        function generateSpecialSign(id, bt, nwtime, ev = '20250113') {
+          const params = {
+            app: 'com.jiaoxiang.fangnale',
+            version: '2.3.4',
+            mac: 'fu:ck:92:92:ff',
+            utk: '',
+            nwtime: nwtime,
+            ev: ev
+          };
+          
+          let signStr = id;
+          const appendStr = 'ahkajfkahlajjaflfakhfakfbuyaozaigaolefuquqikangbuzhu';
+          
+          Object.keys(params).forEach(key => {
+            if (key === 'app') {
+              signStr += params[key] + appendStr;
+            } else {
+              signStr += params[key];
+            }
+          });
+          
+          return CryptoJS.MD5(signStr).toString();
+        }
+        
+        // 处理特殊URL（包含pwd=jsdecode的）
+        function processSpecialUrl(url) {
+          if (url.includes('pwd=jsdecode') && url.includes('id=')) {
+            try {
+              // 解析URL参数
+              const urlObj = new URL(url);
+              const params = new URLSearchParams(urlObj.search);
+              const id = params.get('id');
+              const bt = params.get('bt');
+              const nwtime = Math.floor(Date.now() / 1000);
+              
+              // 生成新签名
+              const sign = generateSpecialSign(id, bt, nwtime, '20250113');
+              
+              // 构建新URL
+              const newParams = new URLSearchParams();
+              if (bt) newParams.set('bt', bt);
+              newParams.set('id', id);
+              newParams.set('app', 'com.jiaoxiang.fangnale');
+              newParams.set('version', '2.3.4');
+              newParams.set('mac', 'fu:ck:92:92:ff');
+              newParams.set('utk', '');
+              newParams.set('nwtime', nwtime);
+              newParams.set('ev', '20250113');
+              newParams.set('sign', sign);
+              
+              return urlObj.origin + urlObj.pathname + '?' + newParams.toString();
+            } catch (error) {
+              console.error('处理特殊URL失败:', error.message);
+              return url;
+            }
+          }
+          return url;
+        }
+        
+        // 主函数
+        async function main() {
+          console.log('开始生成91ktv直播源（基于规则代码）...');
+          const startTime = Date.now();
+          const currentTime = getBeijingTime();
+          
+          let m3uContent = '#EXTM3U\n';
+          m3uContent += `# 91ktv直播源更新时间: ${currentTime}\n`;
+          m3uContent += `# 版本: 基于规则代码 - 包含特殊URL处理\n\n`;
+          
+          let totalChannels = 0;
+          let totalStreams = 0;
+          let specialUrlCount = 0;
+          
+          // 所有分类（与规则代码一致）
+          const categories = [
+            '央视', '卫视', '高清', '4K', '影视', '体育', '动漫', '财经', '综艺', '教育',
+            '新闻', '纪录', '国际', '网络', '购物', '虎牙', '安徽', '北京', '重庆', '福建',
+            '甘肃', '湖北', '湖南', '吉林', '江苏', '江西', '辽宁', '内蒙古', '宁夏', '青海',
+            '山东', '山西', '陕西', '上海', '贵州', '海南', '河北', '河南', '黑龙江', '天津',
+            '新疆', '西藏', '云南', '浙江', '广西', '广东', '四川'
+          ];
+          
+          console.log(`开始处理 ${categories.length} 个分类...`);
+          
+          // 处理每个分类
+          for (const category of categories) {
+            try {
+              console.log(`处理分类: ${category}`);
+              
+              // 获取频道列表
+              const response = await axios.get(
+                `http://sj.91kds.cn/api/get_channel.php?id=${encodeURIComponent(category)}`,
+                { 
+                  timeout: 15000,
+                  headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                  }
+                }
+              );
+              
+              if (!response.data || !Array.isArray(response.data)) {
+                console.log(`分类 ${category} 无数据，跳过`);
+                continue;
+              }
+              
+              console.log(`分类 ${category} 有 ${response.data.length} 个频道`);
+              m3uContent += `# 分类: ${category}\n`;
+              
+              // 处理每个频道
+              for (const channel of response.data) {
+                try {
+                  const nwtime = Math.floor(Date.now() / 1000);
+                  
+                  // 特别处理虎牙分类 - 使用最新的参数
+                  let sign, apiUrl;
+                  
+                  if (category === '虎牙') {
+                    // 使用虎牙专用参数（最新的ev参数）
+                    sign = generateSign(channel.ename, nwtime, '20250113');
+                    apiUrl = `http://api.91kds.cn/zone/srclist?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20250113`;
+                  } else {
+                    // 其他分类使用原有参数
+                    sign = generateSign(channel.ename, nwtime, '20240918');
+                    apiUrl = `http://sjapi1.91kds.cn/api/get_source.php?ename=${channel.ename}&app=com.jiaoxiang.fangnale&version=2.3.4&mac=fu:ck:92:92:ff&nwtime=${nwtime}&sign=${sign}&ev=20240918`;
+                  }
+                  
+                  // 获取播放源
+                  const sourceRes = await axios.get(apiUrl, { 
+                    timeout: 15000,
+                    headers: {
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                  });
+                  
+                  if (sourceRes.data?.liveSource && Array.isArray(sourceRes.data.liveSource)) {
+                    const sources = sourceRes.data.liveSource;
+                    const sourceNames = sourceRes.data.liveSourceName || [];
+                    
+                    console.log(`频道 ${channel.name} 有 ${sources.length} 个播放源`);
+                    
+                    // 处理每个播放源
+                    for (let i = 0; i < sources.length; i++) {
+                      let sourceUrl = sources[i];
+                      const sourceName = sourceNames[i] || `线路${i + 1}`;
+                      
+                      // 处理kdsvod协议
+                      if (sourceUrl.startsWith('kdsvod://')) {
+                        sourceUrl = sourceUrl.replace('kdsvod://', '');
+                      }
+                      
+                      // 处理特殊URL（包含pwd=jsdecode的）
+                      if (sourceUrl.includes('pwd=jsdecode')) {
+                        const originalUrl = sourceUrl;
+                        sourceUrl = processSpecialUrl(sourceUrl);
+                        if (sourceUrl !== originalUrl) {
+                          specialUrlCount++;
+                          console.log(`处理特殊URL: ${channel.name} - ${sourceName}`);
+                        }
+                      }
+                      
+                      // 特别处理虎牙流 - 确保使用正确的域名
+                      if (category === '虎牙' && sourceUrl.includes('huya.m3u8')) {
+                        sourceUrl = sourceUrl.replace(/https?:\/\/[^\/]+/, 'http://utuxx.91kds.cn');
+                      }
+                      
+                      // 添加频道信息和播放源
+                      const displayName = sourceName ? 
+                        `${channel.name} (${sourceName})` : channel.name;
+                      
+                      m3uContent += `#EXTINF:-1 tvg-id="${channel.ename}" tvg-name="${channel.name}" tvg-logo="${channel.icon}" group-title="${category}",${displayName}\n`;
+                      m3uContent += `${sourceUrl}\n`;
+                      totalStreams++;
+                    }
+                    
+                    totalChannels++;
+                  }
+                  
+                } catch (error) {
+                  console.log(`处理频道 ${channel.name} 失败: ${error.message}`);
+                }
+                
+                // 添加延迟避免请求过快
+                await new Promise(resolve => setTimeout(resolve, 300));
+              }
+              
+              m3uContent += '\n';
+              
+            } catch (error) {
+              console.log(`处理分类 ${category} 失败: ${error.message}`);
+            }
+          }
+          
+          // 添加统计信息
+          const duration = Math.round((Date.now() - startTime) / 1000);
+          m3uContent += `# 统计信息:\n`;
+          m3uContent += `# 处理分类数: ${categories.length}\n`;
+          m3uContent += `# 频道总数: ${totalChannels}\n`;
+          m3uContent += `# 播放源总数: ${totalStreams}\n`;
+          m3uContent += `# 特殊URL处理: ${specialUrlCount} 个\n`;
+          m3uContent += `# 生成耗时: ${duration}秒\n`;
+          m3uContent += `# 更新时间: ${getBeijingTime()}\n`;
+          m3uContent += `# 版本: 基于规则代码 - 完整签名处理\n`;
+          m3uContent += `# 包含: 普通签名(ev=20240918) + 特殊签名(ev=20250113)\n`;
+          m3uContent += `# 处理: pwd=jsdecode特殊URL解密\n`;
+          
+          // 保存文件
+          fs.writeFileSync('91ktv.m3u', m3uContent);
+          
+          console.log('生成完成!');
+          console.log(`分类数: ${categories.length}`);
+          console.log(`频道数: ${totalChannels}`);
+          console.log(`播放源数: ${totalStreams}`);
+          console.log(`特殊URL处理: ${specialUrlCount}`);
+          console.log(`耗时: ${duration}秒`);
+        }
+        
+        main().catch(console.error);
+        EOF
+        
+        echo "开始生成直播源（基于规则代码）..."
+        node generate.js
+
+    - name: 验证结果
+      run: |
+        echo "=== 生成结果验证 ==="
+        echo "文件大小: $(wc -c < 91ktv.m3u) 字节"
+        echo "总行数: $(wc -l < 91ktv.m3u)"
+        echo "视频流数量: $(grep -c '^http' 91ktv.m3u)"
+        echo "频道数量: $(grep -c '^#EXTINF' 91ktv.m3u)"
+        echo ""
+        echo "=== 特殊URL处理验证 ==="
+        echo "包含pwd=jsdecode的URL:"
+        grep -c 'pwd=jsdecode' 91ktv.m3u || echo "0"
+        echo "处理后的特殊URL示例:"
+        grep -A1 'pwd=jsdecode' 91ktv.m3u | head -4
+        echo ""
+        echo "=== 虎牙直播流验证 ==="
+        grep -A1 'group-title="虎牙"' 91ktv.m3u | head -4
+        echo ""
+        echo "=== 签名参数验证 ==="
+        echo "普通签名(ev=20240918):"
+        grep -o 'ev=20240918' 91ktv.m3u | head -1
+        echo "特殊签名(ev=20250113):"
+        grep -o 'ev=20250113' 91ktv.m3u | head -1
+        echo ""
+        echo "=== 统计信息 ==="
+        tail -10 91ktv.m3u
+
+    - name: 提交更新
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add 91ktv.m3u
+        git commit -m "更新91ktv直播源（基于规则代码） $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
+        git push
